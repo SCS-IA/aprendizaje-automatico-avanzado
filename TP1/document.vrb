@@ -1,0 +1,23 @@
+\frametitle{1.4 Corpus final}
+\justifying
+	Se guarda el corpus final en un archivo llamado \textbf{corpus.txt}.
+	
+	\begin{lstlisting}[language=Python]
+		with open("corpus.txt", "w", encoding="utf-8") as f:
+			f.write("\n".join(words))
+	\end{lstlisting}
+	
+	Obteniendo un corpus como se ve en la siguiente imagen.
+	\vspace{0.1cm}
+\begin{columns}[t] % [t] para alinear arriba
+	\column{0.55\textwidth}
+	\textbf{Vocabulario (único):} 27.971\\
+	\textbf{Corpus totales:} 310.347
+	
+	\column{0.45\textwidth}
+	\includegraphics[width=0.5\linewidth]{corpus_txt.png}
+	
+	
+\end{columns}
+	
+	
