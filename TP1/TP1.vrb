@@ -1,15 +1,20 @@
-\frametitle{2.2 CBOW}
-\begin{block}{\textbf{Definición:} Continuous Bag of Words(CBOW)}
-	\justifying
-	\vspace{0.1cm}
-	\textbf{Propósito:} Es un modelo de aprendizaje automático para aprender representaciones de palabras que capturan el "significado" de las palabras basadas en su contexto.\\
-	\vspace{0.1cm}
-	\textbf{Principio:} A diferencia de los modelos más simples, CBOW utiliza un contexto de $C$ palabras para predecir una palabra central\\
-	\vspace{0.1cm}
-	\textbf{Contexto vs. Predicción:}  A partir de un contexto de $C$ palabras ($p_{I,1}, p_{I,2}, ..., p_{I,C}$), se intenta predecir la palabra objetivo ($p_O$), que generalmente es la palabra central
-\end{block}
-	
-	
-	
-
+\frametitle{X.X Skip-gram: Actualización}
+\begin{block}{\textbf{Reglas de actualización}}
+		\justifying
+		Durante el entrenamiento, los vectores de entrada y salida se ajustan.\\
+		\vspace{0.2cm}
+		Para los vectores de salida:
+		\[
+		v'_j \leftarrow v'_j - \eta \, E_{Ij} \, h
+		\]
+		Para el vector de entrada de la palabra central:
+		\[
+		v_{p_I} \leftarrow v_{p_I} - \eta \, EH^T
+		\]
+		donde:
+		\begin{itemize}
+			\item $\eta$ es la tasa de aprendizaje.
+			\item $E_{Ij}$ depende del error para cada palabra del contexto.
+		\end{itemize}
+	\end{block}
 	
