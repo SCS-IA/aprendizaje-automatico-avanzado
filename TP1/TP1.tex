@@ -476,10 +476,97 @@ with open("corpus.txt", "r", encoding="utf-8") as f:
 	\includegraphics[width=0.6\textwidth]{Skip_arq.png}
 	\vfill
 \end{frame}
+
+\begin{frame}[fragile]{X.X Skip-gram: Representación de la entrada}
+	\begin{block}{\textbf{Entrada del modelo}}
+		\justifying
+		\textbf{Palabra central:} se representa como un vector one-hot $x \in \mathbb{R}^{|V|}$, 
+		donde $|V|$ es el tamaño del vocabulario.\\
+		\vspace{0.2cm}
+		Ejemplo: si $|V|=10\,000$ y la palabra central ocupa la posición 125, 
+		entonces $x$ tiene un 1 en la posición 125 y 0 en las demás.\\
+		\vspace{0.2cm}
+		\textbf{Matriz de embeddings de entrada:} 
+		\[
+		W \in \mathbb{R}^{|V| \times N}
+		\]
+		donde $N$ es la dimensión del espacio de embeddings (ej. $N=300$).
+	\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{X.X Skip-gram: Representación vectorial}
+	\begin{block}{\textbf{Cálculo de la representación vectorial de la palabra $p_I$}}
+		\justifying
+		La capa oculta no tiene función de activación. 
+		Se obtiene directamente el embedding de la palabra central:
+		\[
+		h = W^T x = v_{p_I}, \quad h \in \mathbb{R}^N
+		\]
+		donde $v_{p_I}$ es el vector de embeddings asociado a la palabra central $p_I$.\\
+		\vspace{0.2cm}
+		Dimensiones:
+		\begin{itemize}
+			\item $x \in \mathbb{R}^{|V|}$ (one-hot).
+			\item $W \in \mathbb{R}^{|V| \times N}$.
+			\item $h \in \mathbb{R}^N$ (embedding resultante).
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{X.X Skip-gram: Salida y softmax}
+	\begin{block}{\textbf{Cálculo de probabilidades}}
+		\justifying
+		Para cada palabra candidata $j$ en el vocabulario, se calcula:
+		\[
+		u_j = (v'_j)^T h, \qquad u \in \mathbb{R}^{|V|}
+		\]
+		donde $v'_j$ es el vector de salida correspondiente a la palabra $j$, 
+		y $W' \in \mathbb{R}^{N \times |V|}$ es la matriz de salida.\\
+		\vspace{0.2cm}
+		Luego se aplica softmax:
+		\[
+		y_j = \frac{\exp(u_j)}{\sum_{k=1}^{|V|} \exp(u_k)}
+		\]
+		obteniendo la probabilidad de que la palabra $j$ aparezca en el contexto de $p_I$.
+	\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{X.X Skip-gram: Función de pérdida}
+	\begin{block}{\textbf{Pérdida logarítmica}}
+		\justifying
+		Dado un contexto de $C$ palabras alrededor de la palabra central $p_I$, 
+		la función de pérdida se define como:
+		\[
+		E = - \sum_{c=1}^{C} \log P(p_{O_c} \mid p_I)
+		\]
+		donde $p_{O_c}$ son las palabras del contexto.\\
+		\vspace{0.2cm}
+	\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{X.X Skip-gram: Actualización}
+	\begin{block}{\textbf{Reglas de actualización}}
+		\justifying
+		Durante el entrenamiento, los vectores de entrada y salida se ajustan.\\
+		\vspace{0.2cm}
+		Para los vectores de salida:
+		\[
+		v'_j \leftarrow v'_j - \eta \, E_{Ij} \, h
+		\]
+		Para el vector de entrada de la palabra central:
+		\[
+		v_{p_I} \leftarrow v_{p_I} - \eta \, EH^T
+		\]
+		donde:
+		\begin{itemize}
+			\item $\eta$ es la tasa de aprendizaje.
+			\item $E_{Ij}$ depende del error para cada palabra del contexto.
+		\end{itemize}
+	\end{block}
 	
-	
-	
-	
+\end{frame}
+
+
 	
 	
 	

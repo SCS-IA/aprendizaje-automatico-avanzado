@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.9.20)  20 SEP 2025 21:23
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.9.20)  20 SEP 2025 23:01
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1142,6 +1142,32 @@ Package pdftex.def Info: Skip_arq.png  used on input line 6.
 ) [25
 
  <./Skip_arq.png>]
+\openout4 = `TP1.vrb'.
+
+ (./TP1.vrb) [26
+
+]
+\openout4 = `TP1.vrb'.
+
+
+(./TP1.vrb) [27
+
+]
+\openout4 = `TP1.vrb'.
+
+ (./TP1.vrb) [28
+
+]
+\openout4 = `TP1.vrb'.
+
+ (./TP1.vrb) [29
+
+]
+\openout4 = `TP1.vrb'.
+
+ (./TP1.vrb) [30
+
+]
 \tf@nav=\write6
 \openout6 = `TP1.nav'.
 
@@ -1163,10 +1189,10 @@ Package rerunfilecheck Info: File `TP1.out' has not changed.
 (rerunfilecheck)             Checksum: 94F3E78FE8921F5AE3DB9637FE6E5674;489.
  ) 
 Here is how much of TeX's memory you used:
- 25365 strings out of 476120
- 473263 string characters out of 5793657
+ 25432 strings out of 476120
+ 475084 string characters out of 5793657
  2121975 words of memory out of 5000000
- 46805 multiletter control sequences out of 15000+600000
+ 46852 multiletter control sequences out of 15000+600000
  570591 words of font info for 66 fonts, out of 8000000 for 9000
  40 hyphenation exceptions out of 8191
  101i,16n,107p,426b,1379s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1180,12 +1206,18 @@ css1000.600pk> </home/franco/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec
 /ecss1200.600pk> </home/franco/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/
 ec/ecss1440.600pk> </home/franco/.texlive2023/texmf-var/fonts/pk/ljfour/jknappe
 n/ec/ecsx2074.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmm
-i8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb>
-Output written on TP1.pdf (25 pages, 434789 bytes).
+cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmm
+i10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb
+></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/
+share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/t
+exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/t
+exmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-d
+ist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fon
+ts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on TP1.pdf (30 pages, 508516 bytes).
 PDF statistics:
- 754 PDF objects out of 1000 (max. 8388607)
- 251 compressed objects within 3 object streams
- 53 named destinations out of 1000 (max. 500000)
- 239 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 914 PDF objects out of 1000 (max. 8388607)
+ 331 compressed objects within 4 object streams
+ 63 named destinations out of 1000 (max. 500000)
+ 419 words of extra memory for PDF output out of 10000 (max. 10000000)
 
