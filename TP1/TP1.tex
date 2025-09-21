@@ -454,7 +454,252 @@ with open("corpus.txt", "r", encoding="utf-8") as f:
 	
 \end{frame}
 	
+\begin{frame}{2.3 Introducción al Muestreo Negativo (NS)}
+	\textbf{Muestreo Negativo: } Reducción de la Complejidad\\
+	\textbf{Problema Principal:}\\
+	\begin{itemize}
+		\item En el entrenamiento estándar (usando Softmax en la capa de salida), la regla de actualización de pesos debe aplicarse a \textbf{cada palabra} del vocabulario $V$.
+		\item La matriz de pesos de salida $W'$ debe ser actualizada para las $|V|$ palabras.
+		\item Cuando el tamaño del vocabulario $|V|$ es muy grande, el \textbf{costo computacional} del proceso se incrementa significativamente.
+	\end{itemize}
 	
+	\textbf{Solución: Muestreo Negativo (NS):}\\
+	
+	\begin{itemize}
+		\item El muestreo negativo aborda este problema definiendo un \textbf{subconjunto pequeño} de palabras $P_{sel}$.
+		\item La actualización de los pesos $W'$ y $W$ se realiza considerando \textbf{solo la palabra objetivo} ($p_O$) y los ejemplos negativos en $P_{sel}$.
+		\item El tamaño de $P_{sel}$ (casos negativos) es considerablemente menor que $|V|$.
+
+	\end{itemize}
+	
+\end{frame}	
+	
+	
+	
+\begin{frame}{2.3  La Nueva Función de Pérdida (Loss Function)}
+	\textbf{Cambio de Arquitectura:} Reducción de la Complejidad\\
+	\begin{itemize}
+		\item Para evitar la costosa normalización Softmax (que requiere la suma sobre $|V|$ elementos), NS modifica la función de pérdida para utilizar la \textbf{función sigmoidea logística} $\sigma(x) = \frac{1}{1 + e^{-x}}$.
+	\end{itemize}
+	
+	\textbf{Definición del Conjunto de Muestras:}\\
+	\begin{itemize}
+		\item El entrenamiento se basa en el conjunto ${p_O} \cup P_{sel}$, donde $p_O$ es el ejemplo positivo (la palabra objetivo a predecir) y $P_{sel}$ es el conjunto de ejemplos negativos, que \textbf{no debe incluir a $p_O$}.	
+	\end{itemize}
+	\textbf{Fórmula de la Función de Pérdida ($E$):}\\
+	\begin{itemize}
+		\item La función de pérdida negativa está definida como: $$ E = -\log \sigma((v'{p_O})^t h) - \sum{p_j \in P_{sel}} \log \sigma(-(v'_{p_j})^t h) $$.	
+	\end{itemize}
+	\textbf{Objetivo de Minimización:}\\
+	\begin{itemize}
+		\item El término $-\log \sigma((v'_{p_O})^t h)$ busca \textbf{maximizar} la probabilidad de que $p_O$ sea la palabra objetivo (ejemplo positivo).
+		\item El término $-\log \sigma(-(v'{p_j})^t h)$ busca \textbf{minimizar} la probabilidad de las palabras $p_j$ en el conjunto $P{sel}$ (ejemplos negativos).
+	\end{itemize}
+	
+	
+\end{frame}	
+	
+	
+	
+\begin{frame}{2.3  Reglas de Actualización de Pesos}
+	\begin{itemize}
+		\item El error $e_j$ para una unidad de salida $j$ ya no se calcula con Softmax, sino utilizando la sigmoide y el valor deseado $t_j$ (donde $u_j = (v'_{p_j})^t h$). $$ e_j = \sigma(u_j) - t_j $$.
+		\item Si $p_j$ es la palabra objetivo ($p_O$), entonces $t_j = 1$ y $e_O = \sigma(u_O) - 1$.
+		\item Si $p_j$ es un ejemplo negativo ($p_j \in P_{sel}$), entonces $t_j = 0$ y $e_j = \sigma(u_j)$.
+	\end{itemize}
+	
+	\textbf{Actualización de $W'$ (Vectores de Salida $v'_j$):}\\
+	\begin{itemize}
+		\item La actualización solo se aplica a los vectores $v'j$ para $j \in {p_O} \cup P{sel}$. $$ v'{j}(\text{nuevo}) = v'{j}(\text{anterior}) - \eta e_j h $$ Donde $\eta$ es la tasa de aprendizaje ($\eta > 0$).	
+	\end{itemize}
+
+
+\end{frame}	
+	
+
+	
+	
+	
+\begin{frame}{2.3  Reglas de Actualización de Pesos}
+	
+	\textbf{Actualización de $W$ (Vectores de Contexto $v_I$):}\\
+	\begin{itemize}
+		\item Para actualizar la matriz de entrada $W$, primero necesitamos calcular el vector de error retropropagado $EH$.
+		\item $EH$ se calcula como la suma ponderada de los vectores de salida $v'j$ por el error $e_j$, pero solo para el conjunto de muestras ${p_O} \cup P{sel}$: $$ EH = \sum_{p_j \in {p_O} \cup P_{sel}} e_j v'_{p_j} $$
+		\item Una vez calculado $EH$, se actualizan los vectores de entrada ($v_I$) que forman el contexto. (Para el caso CBOW, la actualización vectorial de la fila $I_c$ en $W$ correspondiente a cada palabra de contexto $I_c$ debe incluir el factor de promedio $\frac{1}{C}$, como se hacía en la formulación Softmax estándar de CBOW).	
+	\end{itemize}
+	
+	
+\end{frame}	
+
+\begin{frame}[fragile]{2.3 Negativos CBOW en código}
+	\begin{block}{Código Python}
+		\begin{lstlisting}[language=Python]
+	for epoca in range(epocas):
+		for i, (indice_central, contexto_idx, negativos_idx) in enumerate(indices_tuplas):
+			
+			h = cp.mean(W[contexto_idx], axis=0).reshape(-1, 1)
+			subconjunto = list(set([indice_central] + negativos_idx))
+			u_sub = W_prima[:, subconjunto].T @ h 
+			
+			y = sigmoid(u_sub)
+			EL_sub = y
+			pos_idx = subconjunto.index(indice_central)
+			EL_sub[pos_idx] -= 1
+			
+			W_prima[:, subconjunto] -= n * (h @ EL_sub.T)
+			EH = W_prima[:, subconjunto] @ EL_sub  
+			W[contexto_idx] -= n * EH.T / len(contexto_idx)
+		\end{lstlisting}
+	\end{block}
+\end{frame}
+
+\begin{frame}{2.3 Generación de tuplas Central + Contexto}
+	\justifying
+	\textbf{Objetivo:} Preparar los datos para CBOW o Skip-gram creando tuplas de la forma:
+	$$(\text{indices palabra central}, \text{indices palabras de contexto})$$
+
+	\begin{itemize}
+		\item Para cada palabra del corpus, se considera una \textbf{ventana de contexto} con tamaño definido.
+		\item Las palabras dentro de la ventana forman el \textbf{contexto} de la palabra central.
+		\item Cada tupla representa un ejemplo de entrenamiento:
+		\begin{itemize}
+			\item \textbf{Palabra central:} la que queremos predecir o usar como input.
+			\item \textbf{Contexto:} palabras vecinas que proveen información semántica.
+		\end{itemize}
+		\item Este paso es a los algoritmos, para no utilizar memoria extra en las iteraciones del código.
+	\end{itemize}
+	
+	\textbf{Ejemplo conceptual:}  
+	Corpus: \texttt{[“el”, “gato”, “come”, “pescado”]}  
+	Ventana de contexto = 1 → Tuplas generadas:  
+	\[
+	(\text{“gato”}, [\text{“el”}, \text{“come”}]), \quad
+	(\text{“come”}, [\text{“gato”}, \text{“pescado”}])
+	\]
+	
+\end{frame}
+
+\begin{frame}[fragile]{2.3 Selección de Tuplas - Código}
+	\begin{block}{}
+		\begin{lstlisting}[language=Python]
+def generar_tuplas(corpus, palabras_a_indice, contexto):
+
+	indices = [i for i in range(contexto,(len(corpus)-contexto))]
+	
+	indices_contexto = [i for i in range(-contexto,0)] + [i for i in range(1,contexto+1)]
+	
+	indices_tuplas = []
+	
+	for i in indices:
+	
+		indices_tuplas.append((palabras_a_indice[corpus[i]], [palabras_a_indice[corpus[i+j]] for j in indices_contexto]))
+
+return indices_tuplas  
+		\end{lstlisting}
+	\end{block}
+\end{frame}
+
+
+
+
+
+\begin{frame}{2.3 Selección de Ejemplos Negativos}
+	\justifying
+	\textbf{Objetivo:} Seleccionar palabras negativas para Skip-gram / CBOW.  
+	
+	\begin{itemize}
+		\item Para cada palabra central, tomamos su \textbf{contexto real} (palabras cercanas).  
+		\item El conjunto de \textbf{negativos} se obtiene de palabras fuera del contexto.  
+		\item Esto permite que el modelo aprenda a diferenciar \textbf{palabras correctas vs. negativas} sin actualizar todo el vocabulario.  
+		\item La selección puede ser:  
+		\begin{itemize}
+			\item \textbf{Determinística}: alrededor de la posición de la palabra central.  
+			\item \textbf{Aleatoria}: muestreo uniforme de vocabulario excluyendo contexto.
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{2.3 Selección de Ejemplos Negativos}
+	\justifying
+	
+	\begin{itemize}
+		\item \textbf{Negativos determinísticos:} se eligen palabras cercanas a la central, pero fuera de la ventana de contexto.  
+		Ejemplo: palabra central = \texttt{come}, ventana = 1 \\
+		Contexto: \texttt{[gato, pescado]} \\
+		Negativos determinísticos: \texttt{[el]} (palabra izquierda cercana, fuera de contexto)
+		
+		\item \textbf{Negativos aleatorios:} se seleccionan de forma uniforme de todo el vocabulario, excluyendo la central y el contexto. \\
+		Ejemplo: vocabulario = \texttt{[el, gato, come, pescado, pez]} \\
+		Contexto: \texttt{[gato, pescado]} \\
+		Negativos aleatorios: \texttt{[el, pez]} (cualquier palabra fuera del contexto)
+	\end{itemize}
+	
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{2.3 Selección de Negativos - Código Determinístico}
+	\textbf{Ejemplos conceptuales:}
+	\begin{block}{}
+		\begin{lstlisting}[language=Python]
+def generar_tuplas_con_negativos(corpus, palabras_a_indice, contexto, num_negativos):
+			indices = [i for i in range(contexto, len(corpus)-contexto)]
+			indices_contexto = [i for i in range(-contexto,0)] + [i for i in range(1,contexto+1)]
+			indices_tuplas = []
+			for i in indices:
+				indices_tuplas.append(
+				(palabras_a_indice[corpus[i]],
+				[palabras_a_indice[corpus[i + j]] for j in indices_contexto],
+				obtener_negativas(corpus, i, contexto, num_negativos)))
+			return indices_tuplas
+			
+		\end{lstlisting}
+	\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{2.3 Selección de Negativos - Código Determinístico}
+	\begin{block}{}
+		\begin{lstlisting}[language=Python]
+def obtener_negativas(corpus, indice, contexto, num_negativos=5):
+		maximo = contexto + num_negativos // 2
+		inicio = max(0, indice - maximo)
+		fin = min(len(corpus), indice + maximo + 1)
+		izq = corpus[max(0, inicio - maximo):inicio]
+		der = corpus[fin:min(len(corpus), fin + maximo)]
+		if len(izq) < num_negativos // 2:
+			faltan = (num_negativos // 2) - len(izq)
+			der = corpus[fin:min(len(corpus), fin + maximo + faltan)]
+		elif len(der) < num_negativos // 2:
+			faltan = (num_negativos // 2) - len(der)
+			izq = corpus[max(0, inicio - maximo - faltan):inicio]
+		candidatas = [p for p in izq + der if p != corpus[indice]]
+		return [palabras_a_indice[p] for p in candidatas[:num_negativos]]
+		\end{lstlisting}
+	\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{2.3 Selección de Negativos - Código Aleatorio}
+	\begin{block}{}
+		\begin{lstlisting}[language=Python]
+def generar_tuplas_con_negativos_random(corpus, palabras_a_indice, contexto, num_negativos):
+			indices = [i for i in range(contexto, len(corpus)-contexto)]
+			indices_contexto = [i for i in range(-contexto,0)] + [i for i in range(1,contexto+1)]
+			vocabulario = set(range(len(palabras_a_indice)))
+			indices_tuplas = []
+			for i in indices:
+				indices_tuplas.append(
+				(palabras_a_indice[corpus[i]],
+				[palabras_a_indice[corpus[i + j]] for j in indices_contexto],
+				random.sample(
+				vocabulario - set([palabras_a_indice[corpus[i + j]] for j in indices_contexto]),
+				k=num_negativos)))
+			return indices_tuplas
+		\end{lstlisting}
+	\end{block}
+\end{frame}
 	
 \begin{frame}[fragile]{X.X Skip-gram}
 	\begin{block}{\textbf{Definición:} Skip-gram}
@@ -693,4 +938,5 @@ with open("corpus.txt", "r", encoding="utf-8") as f:
 	
 	
 	
+
 \end{document}
