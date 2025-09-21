@@ -1,20 +1,14 @@
-\frametitle{X.X Skip-gram: Actualización}
-\begin{block}{\textbf{Reglas de actualización}}
-		\justifying
-		Durante el entrenamiento, los vectores de entrada y salida se ajustan.\\
-		\vspace{0.2cm}
-		Para los vectores de salida:
+\frametitle{X.X Skip-gram: Actualización de $W$}
+\begin{block}{\textbf{Regla de actualización}}
 		\[
-		v'_j \leftarrow v'_j - \eta \, E_{Ij} \, h
+		v_{p_I} \leftarrow v_{p_I} - \eta \, EH^T,
+		\quad \text{donde } EH = W' EI
 		\]
-		Para el vector de entrada de la palabra central:
-		\[
-		v_{p_I} \leftarrow v_{p_I} - \eta \, EH^T
-		\]
-		donde:
-		\begin{itemize}
-			\item $\eta$ es la tasa de aprendizaje.
-			\item $E_{Ij}$ depende del error para cada palabra del contexto.
-		\end{itemize}
 	\end{block}
 	
+	\begin{block}{\textbf{Implementación en Python}}
+		\begin{lstlisting}[language=Python]
+			EH = W2 @ EI
+			W1[i_central] -= eta * EH.T[0]
+		\end{lstlisting}
+	\end{block}
