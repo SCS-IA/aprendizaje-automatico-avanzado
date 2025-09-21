@@ -7,7 +7,6 @@
 \usepackage{ragged2e}
 \usepackage[table]{xcolor}
 \usepackage{listings}
-
 \usefonttheme[onlymath]{serif}
 
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -451,18 +450,32 @@ with open("corpus.txt", "r", encoding="utf-8") as f:
 	\textbf{Principio:} A diferencia de los modelos más simples, CBOW utiliza un contexto de $C$ palabras para predecir una palabra central\\
 	\vspace{0.1cm}
 	\textbf{Contexto vs. Predicción:}  A partir de un contexto de $C$ palabras ($p_{I,1}, p_{I,2}, ..., p_{I,C}$), se intenta predecir la palabra objetivo ($p_O$), que generalmente es la palabra central
-\end{block}
-	
-	
-	
-
+	\end{block}
 	
 \end{frame}
 	
 	
 	
-	
-	
+\begin{frame}[fragile]{X.X Skip-gram}
+	\begin{block}{\textbf{Definición:} Skip-gram}
+		\justifying
+		\vspace{0.1cm}
+		\textbf{Propósito:} Es un modelo de aprendizaje automático para aprender representaciones de palabras que capturan el significado de las palabras basadas en su contexto. La diferencia con CBOW es que la entrada de la red es una palabra y la salida intenta predecir su contexto.\\
+		\vspace{0.1cm}
+		\textbf{Principio:} Skip-gram utiliza una palabra central para predecir un contexto de C palabras.\\
+		\vspace{0.1cm}
+		\textbf{Contexto vs. Predicción:} A partir de una palabra central ($p_O$), el modelo intenta predecir las palabras de su contexto ($p_{I,1}, p_{I,2}, ..., p_{I,C}$).
+	\end{block}    
+\end{frame}
+
+\begin{frame}[fragile]{X.X Skip-gram}
+	\centering
+	\Large Arquitectura de Skip-gram
+	\vspace{0.5cm} 
+	\vfill
+	\includegraphics[width=0.6\textwidth]{Skip_arq.png}
+	\vfill
+\end{frame}
 	
 	
 	
