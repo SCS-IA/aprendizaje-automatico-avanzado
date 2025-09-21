@@ -1,20 +1,18 @@
-\frametitle{X.X Skip-gram: Actualización}
-\begin{block}{\textbf{Reglas de actualización}}
-		\justifying
-		Durante el entrenamiento, los vectores de entrada y salida se ajustan.\\
-		\vspace{0.2cm}
-		Para los vectores de salida:
-		\[
-		v'_j \leftarrow v'_j - \eta \, E_{Ij} \, h
-		\]
-		Para el vector de entrada de la palabra central:
-		\[
-		v_{p_I} \leftarrow v_{p_I} - \eta \, EH^T
-		\]
-		donde:
-		\begin{itemize}
-			\item $\eta$ es la tasa de aprendizaje.
-			\item $E_{Ij}$ depende del error para cada palabra del contexto.
-		\end{itemize}
+\frametitle{2.3 Selección de Negativos - Código Aleatorio}
+\begin{block}{}
+		\begin{lstlisting}[language=Python]
+def generar_tuplas_con_negativos_random(corpus, palabras_a_indice, contexto, num_negativos):
+			indices = [i for i in range(contexto, len(corpus)-contexto)]
+			indices_contexto = [i for i in range(-contexto,0)] + [i for i in range(1,contexto+1)]
+			vocabulario = set(range(len(palabras_a_indice)))
+			indices_tuplas = []
+			for i in indices:
+				indices_tuplas.append(
+				(palabras_a_indice[corpus[i]],
+				[palabras_a_indice[corpus[i + j]] for j in indices_contexto],
+				random.sample(
+				vocabulario - set([palabras_a_indice[corpus[i + j]] for j in indices_contexto]),
+				k=num_negativos)))
+			return indices_tuplas
+		\end{lstlisting}
 	\end{block}
-	

@@ -1,3 +1,4 @@
 \babel@toc {spanish}{}\relax 
 \beamer@sectionintoc {1}{Ejercicio 1: Creación de Corpus}{2}{0}{1}
 \beamer@sectionintoc {2}{Ejercicio 2: Implementación CBOW y SkipGram}{21}{0}{2}
+\beamer@sectionintoc {3}{Ejercicio 2. A:CBOW}{23}{0}{3}
