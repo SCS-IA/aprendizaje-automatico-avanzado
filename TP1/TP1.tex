@@ -1210,8 +1210,89 @@ def generar_tuplas_con_negativos_random(corpus, palabras_a_indice, contexto, num
 	\end{block}
 \end{frame}
 	
+\section{Ejercicio 2b: negative sampling}
+
+\begin{frame}{}
+	\centering
+	\Large Skip-gram (Negative Sampling)\\
+	\vspace{0.8cm}
+	\includegraphics[width=0.5\textwidth]{big-o}
+\end{frame}
+
+\begin{frame}[fragile]{2b.2.1 Skip-gram(NS)}
+	\begin{block}{\textbf{Definición:} Skip-gram con muestreo de ejemplos negativos (Negative Sampling)}
+		\justifying
+		\vspace{0.1cm}
+		\textbf{Propósito:} Reducir el costo computacional al actualizar los pesos en el modelo SkipGram.\\
+		\vspace{0.1cm}
+		\textbf{Principio:} Actualizar a W' aplicando la técnica de muestro de ejemplos negativos mencionada anteriormente\\
+	\end{block}
+\end{frame}
+
+\begin{frame}{2b.2.2 Lógica de álgoritmo}
+	\begin{block}{\textbf{Función:} entrenar\_skipgram\_neg\_samp()}
+		Al ejecutarse:
+		\begin{itemize}
+			\item Se carga el corpus y vocabulario
+			\item Se inicializan los pesos $W$ y $W'$.
+			\item Se generan las tuplas $(\text{central}, \text{positivos}, \text{negativos})$.
+			\[
+			\begin{array}{ccccc}
+				\textcolor{red}{\underbrace{\text{encontraría}\quad \text{a}}_{\text{negativos}}} &
+				\textcolor{green}{\underbrace{\text{la}\quad \text{maga}}_{\text{positivos}}} &
+				\textcolor{blue}{\underbrace{\text{?}}_{\text{central}}} &
+				\textcolor{green}{\underbrace{\text{tantas}\quad \text{veces}}_{\text{positivos}}} &
+				\textcolor{red}{\underbrace{\text{me}\quad \text{había}}_{\text{negativos}}}
+			\end{array}
+			\]
+			\item Se \textbf{entrenan} los pesos por $q$ épocas y por cada tupla generada.
+			\item se guardan los pesos cada $p$ épocas.
+		\end{itemize}
+	\end{block}
 	
+\end{frame}
+
+\begin{frame}[fragile]{2b.2.3 Código de bucle de entrenamiento}
+	\justifying
+	\begin{lstlisting}[language=Python]
+for epoca in range(epocas):
+	for i, (i_central, i_positivos, i_negativos) in enumerate(
+		indice_tuplas):
+		i_total = i_positivos + i_negativos
+		
+		h = W1[i_central].reshape(-1, 1)
+		u = W2[:, i_total].T @ h
+		y = sigmoide_np(u)
+		
+		EI = y.copy()
+		EI[:len(i_positivos)] -= 1
+		W2[:, i_total] -= eta * (h @ EI.T)
+		
+		EH = W2[:, i_total] @ EI
+		W1[i_central] -= eta * EH.T[0]
+	\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{2b.2.5 Dificultades}
+	\justifying
+	\begin{block}{}
+		La función \texttt{sigmoide\_np} generaba valores \textbf{NaN} en las matrices de pesos $W$ y $W'$ al actualizarlos.
+	\end{block}
 	
+	\begin{lstlisting}[language=Python]
+def sigmoide_np(x):
+	return 1 / (1 + np.exp(-x))
+	\end{lstlisting}
+	
+	\begin{block}{}
+		Para solucionar esto utilizamos un valor de $\eta$ menor (0,001).
+	\end{block}
+	
+\end{frame}
+
+\begin{frame}{2b.2.6 Resultados}
+	...
+\end{frame}
 
 \end{document}
-
