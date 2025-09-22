@@ -1261,10 +1261,121 @@ def sigmoide_np(x):
 		Para solucionar esto utilizamos un valor de $\eta$ menor (0,001).
 	\end{block}
 	
+	
+	
 \end{frame}
 
-\begin{frame}{2b.2.6 Resultados}
-	...
+
+
+
+\begin{frame}[fragile]{2b.2.6 Funciones para resultados}
+	\justifying
+	\textbf{Función para similitud del coseno:} Cercanos a 1 indican que los vectores apuntan en una dirección muy similar, cercanos a 0 indican poca o ninguna relación y cercanos a -1 indican que los vectores apuntan en direcciones opuestas en el espacio vectorial, pero esto no implica necesariamente una relación semántica opuesta, sino solo una oposición geométrica.
+		\begin{lstlisting}[language=Python]
+def calcular_similitud(diccionario_palabras, W1, palabra1, palabra2):
+	if palabra1 not in diccionario_palabras or palabra2 not in diccionario_palabras:
+	return None
+	
+	indice1 = diccionario_palabras[palabra1]
+	indice2 = diccionario_palabras[palabra2]
+	embedding1 = W1[indice1]
+	embedding2 = W1[indice2]
+	similitud = embedding1 @ embedding2 / (linalg.norm(embedding1) * linalg.norm(embedding2))
+return similitud
+	\end{lstlisting}
 \end{frame}
+
+
+\begin{frame}[fragile]{2b.2.6 Funciones para resultados}
+	\justifying
+	\textbf{Función para generar oraciones:} Se propaga hasta softmax() con la idea de ir creando una oración según lo obtenido, se intenta evitar palabras repetidas, ya que se repetían constantemente.
+	\begin{lstlisting}[language=Python]
+def generar_oracion(corpus, W1, W2, diccionario_palabras, diccionario_indices, palabras_previas, longitud=10):
+	palabras_previas_lista = palabras_previas.split()
+	
+	for _ in range(longitud):
+		indices = [diccionario_palabras[p] for p in palabras_previas_lista if p in diccionario_palabras]
+		if not indices:
+			print("No se encontraron palabras previas en el diccionario.")
+		break
+		h = np.mean(W1[indices], axis=0).reshape(-1, 1)
+		u = W2.T @ h
+		y = softmax(u).flatten()
+		\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{2b.2.6 Funciones para resultados}
+	\begin{lstlisting}[language=Python]
+
+		candidatos = np.argsort(-y)
+		
+		palabra_siguiente = None
+		for idx in candidatos:
+			candidata = diccionario_indices[idx]
+			if candidata not in palabras_previas_lista:
+				palabra_siguiente = candidata
+			break
+		
+		if palabra_siguiente is None:
+			palabra_siguiente = diccionario_indices[candidatos[0]]
+		
+		palabras_previas_lista.append(palabra_siguiente)
+
+return " ".join(palabras_previas_lista)
+		return similitud
+	\end{lstlisting}
+\end{frame}
+
+\begin{frame}{2b.2.7 Modelo entrenado y resultados}
+	\justifying
+	\textbf{Modelo entrenado:} Se utilizó un modelo tipo \textit{skip-gram} con los siguientes hiperparámetros:
+	\begin{itemize}
+		\item Dimensión de embeddings: 65
+		\item Ventana de contexto: 3
+		\item Tasa de aprendizaje: 0.001
+		\item Épocas: 950
+		\item Negativos: 5
+	\end{itemize}
+	
+	\vspace{0.3cm}
+	\textbf{Similitud del coseno entre pares de palabras:}
+	\begin{table}[]
+		\centering
+		\begin{tabular}{l l c}
+			\hline
+			Palabra 1 & Palabra 2 & Similitud \\
+			\hline
+			rey     & reina     & 0.6736 \\
+			gato    & perro     & 0.8626 \\
+			vida    & muerte    & 0.8583 \\
+			arriba  & abajo     & 0.9153 \\
+			feliz   & triste    & 0.8680 \\
+			coche   & automóvil & 0.7134 \\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+\end{frame}
+
+
+\begin{frame}{2b.2.8 Generación de oraciones}
+	\justifying
+	A partir de distintas palabras iniciales, el modelo genera continuaciones basadas en los embeddings aprendidos:
+	
+	\vspace{0.3cm}
+	\textbf{Ejemplos:}
+	\begin{itemize}
+		\item Palabras iniciales: \textit{``el gato''} \\
+		Oración generada: \textit{``el gato dónde codo arrestado lucas suponga maga argentada detenga agitación entrarían''}
+		\item Palabras iniciales: \textit{``la casa''} \\
+		Oración generada: \textit{``la casa traveler arrestado suponga sin argentada detenga agitación entrarían tejado sobrepasara''}
+		\item Palabras iniciales: \textit{``un perro''} \\
+		Oración generada: \textit{``un perro talita arrestado suponga maga argentada detenga agitación entrarían tejado sobrepasara''}
+	\end{itemize}
+\end{frame}
+
+
+
 
 \end{document}
