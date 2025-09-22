@@ -440,23 +440,7 @@ with open("corpus.txt", "r", encoding="utf-8") as f:
 	\end{lstlisting}
 
 \end{frame}
-	
-\section{Ejercicio 2. A:CBOW}
-	
-\begin{frame}[fragile]{2.2 CBOW}
-	\begin{block}{\textbf{Definición:} Continuous Bag of Words(CBOW)}
-	\justifying
-	\vspace{0.1cm}
-	\textbf{Propósito:} Es un modelo de aprendizaje automático para aprender representaciones de palabras que capturan el "significado" de las palabras basadas en su contexto.\\
-	\vspace{0.1cm}
-	\textbf{Principio:} A diferencia de los modelos más simples, CBOW utiliza un contexto de $C$ palabras para predecir una palabra central\\
-	\vspace{0.1cm}
-	\textbf{Contexto vs. Predicción:}  A partir de un contexto de $C$ palabras ($p_{I,1}, p_{I,2}, ..., p_{I,C}$), se intenta predecir la palabra objetivo ($p_O$), que generalmente es la palabra central
-\end{block}
-	
-\end{frame}
-	
-	
+		
 \begin{frame}[fragile]{2.2 CBOW: Conceptos Fundamentales}
 	\begin{block}{\textbf{Definición:} Continuous Bag of Words(CBOW)}
 		\justifying
@@ -1121,7 +1105,7 @@ def generar_tuplas_con_negativos_random(corpus, palabras_a_indice, contexto, num
 			W1[i_central] -= eta * EH.T[0]
 			
 			if i % 1000 == 0:
-			print(f"Epoca {epoca}, Par: {i}/{total_pares}")
+				print(f"Epoca {epoca}, Par: {i}/{total_pares}")
 			
 			print(f"Fin de epoca: {epoca}")                
 		\end{lstlisting}
@@ -1134,11 +1118,11 @@ def generar_tuplas_con_negativos_random(corpus, palabras_a_indice, contexto, num
 		\begin{lstlisting}[language=Python]
 			# ---Guardado de Pesos---
 			if epoca % intervalo_guardado == 0 or epoca == epocas - 1:
-			nombre_archivo = f'pesos_skipgram_{nombre_pc}_epoca{epoca}.npz'
-			guardar_modelo(nombre_archivo, W1, W2, eta=eta, N=N, C=C, cparray=True)
+				nombre_archivo = f'pesos_skipgram_{nombre_pc}_epoca{epoca}.npz'
+				guardar_modelo(nombre_archivo, W1, W2, eta=eta, N=N, C=C, cparray=True)
 			
-			print(f"Entrenamiento con {epocas} terminado.")
-			return W1, W2                
+		print(f"Entrenamiento con {epocas} terminado.")
+		return W1, W2                
 		\end{lstlisting}
 	\end{block}
 \end{frame}
