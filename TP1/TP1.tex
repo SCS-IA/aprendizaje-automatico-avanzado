@@ -441,6 +441,8 @@ with open("corpus.txt", "r", encoding="utf-8") as f:
 
 \end{frame}
 	
+\section{Ejercicio 2. A:CBOW}
+	
 \begin{frame}[fragile]{2.2 CBOW}
 	\begin{block}{\textbf{Definición:} Continuous Bag of Words(CBOW)}
 	\justifying
@@ -450,8 +452,280 @@ with open("corpus.txt", "r", encoding="utf-8") as f:
 	\textbf{Principio:} A diferencia de los modelos más simples, CBOW utiliza un contexto de $C$ palabras para predecir una palabra central\\
 	\vspace{0.1cm}
 	\textbf{Contexto vs. Predicción:}  A partir de un contexto de $C$ palabras ($p_{I,1}, p_{I,2}, ..., p_{I,C}$), se intenta predecir la palabra objetivo ($p_O$), que generalmente es la palabra central
+\end{block}
+	
+\end{frame}
+	
+	
+\begin{frame}[fragile]{2.2 CBOW: Conceptos Fundamentales}
+	\begin{block}{\textbf{Definición:} Continuous Bag of Words(CBOW)}
+		\justifying
+		\vspace{0.1cm}
+		\textbf{Propósito:} El objetivo es encontrar representaciones vectoriales ($v_p$) para cada palabra en el vocabulario $V$. Estas representaciones se optimizan para que las palabras que comparten contextos sean más similares (tengan un producto interno alto)\\
+		\vspace{0.1cm}
+		\textbf{Principio:} A diferencia de los modelos más simples, CBOW utiliza un contexto de $C$ palabras para predecir una palabra central\\
+		\vspace{0.1cm}
+		\textbf{Contexto vs. Predicción:}  A partir de un contexto de $C$ palabras ($p_{I,1}, p_{I,2}, ..., p_{I,C}$), se intenta predecir la palabra objetivo ($p_O$), que generalmente es la palabra central
 	\end{block}
 	
+\end{frame}
+
+\begin{frame}[fragile]{2.2 CBOW: Arquitectura del Perceptrón}
+	\begin{block}{\textbf{Arquitectura}}
+		\justifying
+		\vspace{0.1cm}
+		\textbf{Estructura:} El calculo se enmarca en un \textbf{perceptron multicapa}\\
+		\vspace{0.1cm}
+		\textbf{Entrada:} Se presentan las $C$ palabras de contexto. La representación de las entradas se realiza mediante la \textbf{codificación One-hot}\\
+		\vspace{0.1cm}
+		\textbf{Diccionario ($V$):} Las palabras pertenecen a un diccionario $V$ cuyo cardinal es $|V|$ \\
+		\vspace{0.1cm}
+		\textbf{Capa Oculta:} Tiene una única capa oculta con $N$ unidades, todas con función de activación lineal $g(x) = x$ \\
+		\vspace{0.1cm}
+		\textbf{Dimensiones de Pesos:} 						\\
+		\begin{itemize}
+			\item Matriz de pesos Entrada-Oculta ($W$): $W \in |V| \times N$\\
+			\item Matriz de pesos Oculta-Salida ($W'$): $W' \in N \times |V|$
+		\end{itemize}
+		\vspace{0.1cm}
+		\textbf{Salida:} La función de activación de las unidades de salida es soft-max 
+	\end{block}
+	
+\end{frame}
+	
+	
+\begin{frame}[fragile]{2.2 CBOW: Arquitectura del Perceptrón}
+\centering
+\includegraphics[width=0.45\textwidth]{CBOW_arquitectura}
+	
+\end{frame}
+
+
+\begin{frame}[fragile]{2.2 Calculo de representación Contextual (h)}
+
+		\justifying
+		\textbf{Cálculo de $h$:} Se $h$ calcula como el \textbf{promedio de las filas} de $W$ que corresponden a los índices de las palabras en el contexto\\
+		\vspace{0.1cm}
+		\textbf{Representaciones One-Hot:}  Sea $x_1, x_2, ..., x_C$ las representaciones one-hot de las $C$ palabras en el contexto\\
+		\vspace{0.1cm}
+		\textbf{Representaciones Contextuales ($v_p$):} Sea $v_{p_i}$ la representación contextual de la palabra $p_i$ (que es la fila $i$ de $W$ donde $i$ es el índice de $p_i$ en $V$) \\
+		\vspace{0.1cm}
+		\textbf{Fórmula de $h$:} 						\\
+		\begin{itemize}
+			\item Cálculo del vector $h$: 	
+			$$h = \frac{1}{C} W^t(x_1 + x_2 + \dots + x_C)$$\\
+			\item Cálculo de $h$ usando $v_p$:
+			 $$h = \frac{1}{C} (v_{p1} + v_{p2} + \dots + v_{pC})$$
+		\end{itemize}
+	\begin{lstlisting}[language=Python]
+		with open("corpus.txt", "r", encoding="utf-8") as f:
+		corpus = f.read().splitlines()
+	\end{lstlisting}
+	Luego se crean los diccionarios que se utilizaran en ambos métodos.
+	\begin{lstlisting}[language=Python]
+		vocab = sorted(set(corpus))
+		vocab_tamano = len(vocab)
+		palabra_a_indice = {palabra: i for i, palabra in enumerate(vocab)}
+		indice_a_palabra = {i: palabra for i, palabra in enumerate(vocab)}
+	\end{lstlisting}
+	
+\end{frame}
+
+	
+\begin{frame}[fragile]{2.2 Calculo de representación Contextual (h)}
+
+	\begin{lstlisting}[language=Python]
+		h = cp.mean(W[indices_contextos], axis=0).reshape(-1,1)
+	\end{lstlisting}
+	Donde se utiliza la función \texttt{cupy.mean(a, axis=None, dtype=None, out=None, keepdims=False)}, que retorna la media de la matriz de entrada $a$ a lo largo del eje. 
+	
+	\begin{block}{Explicación}
+	\begin{itemize}
+	\item W[indices$\_$contextos] selecciona los vectores de embedding correspondientes a esas palabras\\
+	\item axis=0 significa promediar columna por columna.
+	\[
+	h = \frac{1}{C} \sum_{i=1}^{C} v_{p_i}
+	= \left(
+	\frac{1}{C}\sum_{i=1}^C w_{i1}, \;
+	\frac{1}{C}\sum_{i=1}^C w_{i2}, \;
+	\dots, \;
+	\frac{1}{C}\sum_{i=1}^C w_{id}
+	\right)
+	\]
+\end{itemize}
+	\end{block}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{2.2 Salida de la Red}
+	\begin{block}{Excitación de la salida}
+\justifying
+\textbf{ Vector de Salida ($v'_{p_j}$):} La columna $j$ de la matriz $W'$ se denota como $v'_{p_j}$, siendo el vector de salida para la palabra $p_j$\\
+\vspace{0.3cm}
+\textbf{Estado de Excitación ($u_j$)} El estado de excitación de cada unidad de salida $j$ ($u_j$) se calcula como el producto interno del vector de salida $v'_{p_j}$ y la activación de la capa oculta $h$\\
+$$u_j = (\mathbf{v}'_{p_j})^t \mathbf{h} \quad$$
+Siendo en el código
+\begin{lstlisting}[language=Python]
+	u = W_prima.T@h
+\end{lstlisting}
+	\end{block}
+\end{frame}
+	
+	
+\begin{frame}[fragile]{2.2 Salida de la Red (Softmax)}
+	\begin{block}{Excitación de la salida}
+		\justifying
+		\textbf{ Activación de Salida ($y_j$):} La función de activación de las unidades de salida es soft-max. El estado de activación $y_j$ de la unidad $j$ se calcula de la siguiente manera\\
+		$$y_j = \frac{\exp u_j}{\sum_{j'=1}^{|V|} \exp u_{j'}} \quad$$
+		\vspace{0.3cm}
+		\textbf{ Interpretación:} El valor de $y_j$ se interpreta como la probabilidad de que la palabra objetivo sea $p_j$ dado el contexto que entra a la red ($p_{I,1}, \dots, p_{I,C}$)\\
+		$$P(p_j/p_{I,1}, \dots, p_{I,C}) = y_j \quad$$
+		Siendo en el código
+		\begin{lstlisting}[language=Python]
+			y = softmax(u)
+		\end{lstlisting}
+		Donde 
+				\begin{lstlisting}[language=Python]
+		def softmax(u):
+			u_max = np.max(u)
+			e_u = np.exp(u - u_max)
+			return e_u / e_u.sum()
+		\end{lstlisting}
+	\end{block}
+\end{frame}
+	
+	
+\begin{frame}[fragile]{2.2 Salida de la Red (Softmax)}
+	\begin{block}{Excitación de la salida}
+		\justifying
+		Siendo en el código
+		\begin{lstlisting}[language=Python]
+			def softmax(u):
+			u_max = np.max(u)
+			e_u = np.exp(u - u_max)
+			return e_u / e_u.sum()
+		\end{lstlisting}
+		\textbf{ Consideraciones:} Se le resta a $u$ el maximo de $u$, ya que generaba errores $nan$ en los pesos\\
+		\vspace{0.2cm}
+		\textbf{ Explicación:} Restar $u\_max$ evita problemas numéricos por exponentes grandes, llamado overflow\\
+		\[
+		\frac{e^{u_i - c}}{\sum_j e^{u_j - c}} 
+		= \frac{e^{u_i} e^{-c}}{\sum_j e^{u_j} e^{-c}} 
+		= \frac{e^{u_i}}{\sum_j e^{u_j}}
+		\]
+
+	\end{block}
+\end{frame}
+	
+	
+\begin{frame}[fragile]{2.2 Función de Pérdida ($E$)}
+	\begin{block}{}
+		\justifying
+		\textbf{Objetivo:} Minimizar la función de pérdida $E$, que es el negativo del logaritmo de la probabilidad de la palabra objetivo $p_O$ dado el contexto ($p_{I,1}, \dots, p_{I,C}$).\\[0.2cm]
+		
+		\textbf{Pérdida Logarítmica:} 
+		\[
+		E = - \log p(p_O \mid p_{I,1}, p_{I,2}, \dots, p_{I,C})
+		\] \\[0.1cm]
+		
+		\textbf{Error ($e_j$):} Se define como la diferencia entre la predicción y el objetivo:
+		\[
+		e_j = y_j - t_j
+		\]
+		donde
+		\[
+		t_j =
+		\begin{cases}
+			1 & \text{si } j = j^* \text{ (índice de la palabra objetivo $p_O$)}\\
+			0 & \text{si } j \neq j^*
+		\end{cases}
+		\] \\[0.1cm]
+	\end{block}
+
+\end{frame}
+	
+\begin{frame}[fragile]{2.2 Función de Pérdida y Derivada}
+	\begin{block}{Función de Pérdida}
+		La función de pérdida se define como:
+\[
+\begin{aligned}
+	E &= - \log p(p_O \mid p_{I,1}, p_{I,2}, \dots, p_{I,C}) \\
+	&= - u_{j^*} + \log \sum_{j'=1}^{|V|} \exp u_{j'} \\
+\end{aligned}
+\]
+		\textbf{Derivada del error respecto al estado de excitación $u_j$:}
+		\[
+		\frac{\partial E}{\partial u_j} = y_j - t_j = e_j
+		\]
+			En código es
+		\begin{lstlisting}[language=Python]
+			e = y
+			e[indice_central] -= 1
+		\end{lstlisting}
+
+	\end{block}
+\end{frame}
+	
+\begin{frame}[fragile]{2.2 Actualización de $W'$ (Pesos Oculta-Salida)}
+	\begin{block}{Actualización de pesos}
+	La regla de actualización para $W'$ en CBOW es idéntica a la del contexto de una sola palabra, ya que solo se modificó el cálculo de $h$\\
+	Derivando $E$ respecto a $w'_{ij}$ obtenemos la regla de actualización:\\
+	En forma vectorial:
+	\[
+	W'_{\cdot,j}(\text{nuevo}) = W'_{\cdot,j}(\text{anterior}) - \eta \, e_j \, h
+	\]
+	Considerando las columnas de $W'$ como vectores de salida $v'_j$:
+	\[
+	v'_j(\text{nuevo}) = v'_j(\text{anterior}) - \eta \, e_j \, h
+	\]
+	En código es
+	\begin{lstlisting}[language=Python]
+		W_prima -= n*(h@e.T)
+	\end{lstlisting}
+	
+	
+	
+	\end{block}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{2.2 Vector de Error Propagado ($EH$):}
+	\begin{block}{Error Propagado}
+		Este vector de error se propaga hacia la capa oculta y se calcula como el producto de la matriz $W'$ por el vector de errores de salida $e$\\
+		\[
+		EH = W' \mathbf{e}
+		\]
+		La regla de actualización para $W$ se aplica a la fila $W_lc$ de $W$ (o su vector de representación contextual $v_{l_c}$) para cada palabra $l_c$ en el contexto, donde $1 \leq c \leq C$
+		\[
+		\mathbf{v}{l_c}(\text{nuevo}) = \mathbf{v}{l_c}(\text{anterior}) - \eta \frac{1}{C} EH^t
+		\]
+		En código es
+		\begin{lstlisting}[language=Python]
+			EH = W_prima@e
+			W[indices_contextos] -=n * EH.T / len(indices_contextos)
+		\end{lstlisting}
+	\end{block}
+\end{frame}
+
+	
+\begin{frame}[fragile]{2.2 Código Entero}
+	\begin{block}{Código Python}
+		\begin{lstlisting}[language=Python]
+for epoca in range(epocas):	
+		for i, (indice_central, indices_contextos) in enumerate(indices_tuplas):
+			h = cp.mean(W[indices_contextos], axis=0).reshape(-1,1)
+			u = W_prima.T @ h
+			y = softmax(u)
+			
+			e = y
+			e[indice_central] -= 1
+			W_prima -= n * (h @ e.T)
+			EH = W_prima @ e
+			W[indices_contextos] -= n * EH.T / len(indices_contextos)
+		\end{lstlisting}
+	\end{block}
 \end{frame}
 	
 \begin{frame}{2.3 Introducción al Muestreo Negativo (NS)}
@@ -940,3 +1214,4 @@ def generar_tuplas_con_negativos_random(corpus, palabras_a_indice, contexto, num
 	
 
 \end{document}
+
