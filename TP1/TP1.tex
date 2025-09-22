@@ -501,18 +501,6 @@ with open("corpus.txt", "r", encoding="utf-8") as f:
 			\item Cálculo de $h$ usando $v_p$:
 			 $$h = \frac{1}{C} (v_{p1} + v_{p2} + \dots + v_{pC})$$
 		\end{itemize}
-	\begin{lstlisting}[language=Python]
-		with open("corpus.txt", "r", encoding="utf-8") as f:
-		corpus = f.read().splitlines()
-	\end{lstlisting}
-	Luego se crean los diccionarios que se utilizaran en ambos métodos.
-	\begin{lstlisting}[language=Python]
-		vocab = sorted(set(corpus))
-		vocab_tamano = len(vocab)
-		palabra_a_indice = {palabra: i for i, palabra in enumerate(vocab)}
-		indice_a_palabra = {i: palabra for i, palabra in enumerate(vocab)}
-	\end{lstlisting}
-	
 \end{frame}
 
 	
