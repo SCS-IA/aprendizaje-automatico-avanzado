@@ -24,7 +24,7 @@ def entrenar_cbow(archivo_corpus, nombre_pc, epocas=1, η=0.001, N=300, C=4, W1=
             W2 -= η * (h @ e.T)
 
             EH = W2 @ e
-            W1[i_contextos] -= η * (1/C) * EH.T
+            W1[i_contextos] -= η * (1/C*2) * EH.T
 
             if i % 1000 == 0:
                 print(f"Época {epoca}, Par: {i}/{total_pares}")
@@ -39,4 +39,5 @@ def entrenar_cbow(archivo_corpus, nombre_pc, epocas=1, η=0.001, N=300, C=4, W1=
     print(f"Entrenamiento con {epocas} terminado.")
     return W1, W2
 
-W1, W2 = entrenar_cbow("corpus.txt", "pcmati", epocas=100, η=0.01, N=20, C=4, intervalo_guardado=50)
+W1, W2 = entrenar_cbow("corpus.txt", "pcshavak-b", epocas=1000, η=0.001, N=120, C=5, intervalo_guardado=50)
+W1, W2 = entrenar_cbow("corpus.txt", "pcshavak-b", epocas=1000, η=0.001, N=250, C=5, intervalo_guardado=50)
