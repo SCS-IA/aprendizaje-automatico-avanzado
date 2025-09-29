@@ -28,9 +28,13 @@ def entrenar_skipgram_neg_samp(ruta_corpus, nombre_pc, epocas=1, η=0.001, N=300
             W1[i_central] -= η * EH.T[0]
 
             if i % 1000 == 0:
-                print(f"Época {epoca}, Par: {i}/{total_pares}")
+                porcentaje = i / total_pares
+                largo_barra = 30  # cantidad de caracteres de la barra
+                completado = int(largo_barra * porcentaje)
+                barra = "█" * completado + "-" * (largo_barra - completado)
+                print(f"Época {epoca}/{epocas} |{barra}| {porcentaje:.0%} ({i}/{total_pares})", end="\r")
 
-        print(f"Fin de época: {epoca}")
+        #print(f"Fin de época: {epoca}")
 
         # ---Guardado de Pesos---
         if epoca % intervalo_guardado == 0 or epoca == epocas - 1:
