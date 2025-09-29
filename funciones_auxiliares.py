@@ -7,7 +7,7 @@ import re
 # Funciones auxiliares, ideal UNIFICARLAS en algún momento
 
 # ==============================================================
-#                      FUNCIONES MATÍAs
+#                      FUNCIONES MATÍAS
 # ==============================================================
 
 def cargar_corpus(nombre_archivo="corpus.txt", carpeta="corpus"):
@@ -138,6 +138,88 @@ def ver_palabras_similares(corpus, word_to_idx, idx_to_word, palabra, W1, N=5):
         print(f"Palabras similares a '{palabra}': {similares}")
     else:
         print(f"La palabra {palabra} no existe en el corpus")
+
+def evaluar_cbow(indice_tuplas, W1, W2, N=5):
+    """
+    Evalúa un modelo CBOW de forma optimizada, manteniendo el bucle for.
+    """
+    W1 = cp.asarray(W1)
+    W2 = cp.asarray(W2)
+    
+    totales = len(indice_tuplas)
+    aciertos = 0
+
+    for i, (i_central, i_contextos) in enumerate(indice_tuplas):
+        # ---Propagación---
+        h = cp.mean(W1[i_contextos], axis=0).reshape(-1, 1)
+        u = W2.T @ h
+        y = softmax_cp(u).flatten() 
+
+        # ---Tomar N mayores y contar aciertos---
+        top_n_indices = cp.argpartition(y, -N)[-N:]
+        is_acierto = cp.any(top_n_indices == i_central)
+        
+        if is_acierto:
+            aciertos += 1
+        if i % 1000 == 0 and i > 0:
+            progreso = (i / totales) * 100
+            print(f"Progreso: [{progreso:.1f}%] - Aciertos: {aciertos}/{totales}", end='\r')
+
+    print(f"Cantidad de aciertos (Top-{N}): {aciertos}/{totales}, esto es un {(aciertos / totales) * 100:.2f}%, ")
+    
+    return aciertos, totales
+
+def softmax_cp_t(u, axis=0):
+    u_max = cp.max(u, axis=axis, keepdims=True)
+    exp_u = cp.exp(u - u_max)
+    return exp_u / cp.sum(exp_u, axis=axis, keepdims=True)
+
+def evaluar_cbow_lotes(indice_tuplas, W1, W2, N=5, batch_size=1024):
+    """
+    Evalúa un modelo CBOW procesando los datos en lotes para mayor eficiencia.
+    """
+    W1 = cp.asarray(W1)
+    W2 = cp.asarray(W2)
+    
+    totales = len(indice_tuplas)
+    aciertos = 0
+
+    # El bucle for ahora itera sobre los datos en lotes (batches)
+    for i in range(0, totales, batch_size):
+        lote_actual = indice_tuplas[i : i + batch_size]
+        if not lote_actual:
+            continue
+            
+        batch_central_indices, batch_contextos = zip(*lote_actual)
+        
+        # ---Propagación (para todo el lote)---
+        indices_contexto_aplanados = [idx for sublist in batch_contextos for idx in sublist]
+        embeddings = W1[indices_contexto_aplanados]
+        
+        num_palabras_contexto = len(batch_contextos[0])
+        embeddings_lote = embeddings.reshape(len(lote_actual), num_palabras_contexto, -1)
+        
+        h_lote = cp.mean(embeddings_lote, axis=1)
+        u_lote = W2.T @ h_lote.T
+        y_lote = softmax_cp_t(u_lote)
+
+        # ---Tomar N mayores y contar aciertos (para todo el lote)---
+        top_n_indices_lote = cp.argpartition(y_lote, -N, axis=0)[-N:, :]
+        aciertos_mask = (top_n_indices_lote == cp.array(batch_central_indices))
+        aciertos_en_lote = cp.any(aciertos_mask, axis=0).sum()
+        aciertos += aciertos_en_lote.item()
+        
+        # Imprimir el progreso periódicamente
+        # (i // batch_size) nos da el número de lote actual
+        if (i // batch_size) % 10 == 0:
+            progreso = (i + len(lote_actual)) / totales * 100
+            print(f"Progreso: [{progreso:.1f}%] - Aciertos: {aciertos}", end='\r')
+
+    # Limpiar la línea de progreso e imprimir el resultado final
+    print(" " * 80, end='\r') # Limpia la línea de progreso
+    print(f"Cantidad de aciertos (Top-{N}): {aciertos}/{totales}, esto es un {(aciertos / totales) * 100:.2f}%")
+    
+    return aciertos, totales
 
 # ==============================================================
 #                      FUNCIONES NICOLÁS
