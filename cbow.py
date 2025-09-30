@@ -21,9 +21,9 @@ def entrenar_cbow(archivo_corpus, nombre_pc, epocas=1, η=0.001, N=300, C=4, W1=
             # ---Retropropagación---
             e = y.copy()
             e[i_central] -= 1
-            W2 -= η * (h @ e.T)
-
             EH = W2 @ e
+
+            W2 -= η * (h @ e.T)
             W1[i_contextos] -= η * (1/C*2) * EH.T
 
             if i % 1000 == 0:
