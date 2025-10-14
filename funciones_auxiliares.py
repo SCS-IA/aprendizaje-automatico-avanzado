@@ -47,10 +47,24 @@ def softmax_np(u):
     exp_u = np.exp(u - u_max)
     return exp_u / np.sum(exp_u)
 
+def softmax_np2(u):
+    u_max = np.max(u)           # Estabiliza restando el máximo
+    exp_u = np.exp(u - u_max)   # e^(u - max)
+    sum_exp = np.sum(exp_u)     # suma de exponentes
+    softmax = exp_u / sum_exp
+    return softmax, sum_exp
+
 def softmax_cp(u):
     u_max = cp.max(u) # Estabiliza restando el máximo
     exp_u = cp.exp(u - u_max)
     return exp_u / cp.sum(exp_u)
+
+def softmax_cp2(u):
+    u_max = cp.max(u)           # Estabiliza restando el máximo
+    exp_u = cp.exp(u - u_max)   # e^(u - max)
+    sum_exp = cp.sum(exp_u)     # suma de exponentes
+    softmax = exp_u / sum_exp
+    return softmax, sum_exp
 
 def sigmoide_np(x):
     return 1 / (1 + np.exp(-x))
@@ -139,15 +153,17 @@ def ver_palabras_similares(corpus, word_to_idx, idx_to_word, palabra, W1, N=5):
     else:
         print(f"La palabra {palabra} no existe en el corpus")
 
-def evaluar_cbow(indice_tuplas, W1, W2, N=5):
+def evaluar_cbow_cp(indice_tuplas, W1, W2, N=5):
     """
-    Evalúa un modelo CBOW de forma optimizada, manteniendo el bucle for.
+    Evalúa un modelo CBOW devolviendo aciertos top-N (flexibles)
+    y aciertos estrictos (exactos), mostrando progreso y porcentajes parciales.
     """
     W1 = cp.asarray(W1)
     W2 = cp.asarray(W2)
     
     totales = len(indice_tuplas)
-    aciertos = 0
+    aciertos_topN = 0
+    aciertos_estrictos = 0
 
     for i, (i_central, i_contextos) in enumerate(indice_tuplas):
         # ---Propagación---
@@ -155,19 +171,64 @@ def evaluar_cbow(indice_tuplas, W1, W2, N=5):
         u = W2.T @ h
         y = softmax_cp(u).flatten() 
 
-        # ---Tomar N mayores y contar aciertos---
+        # ---Top-N---
         top_n_indices = cp.argpartition(y, -N)[-N:]
-        is_acierto = cp.any(top_n_indices == i_central)
+        if cp.any(top_n_indices == i_central):
+            aciertos_topN += 1
         
-        if is_acierto:
-            aciertos += 1
+        # ---Acierto estricto (top-1)---
+        pred_top1 = cp.argmax(y)
+        if pred_top1 == i_central:
+            aciertos_estrictos += 1
+
+        # ---Progreso---
         if i % 1000 == 0 and i > 0:
             progreso = (i / totales) * 100
-            print(f"Progreso: [{progreso:.1f}%] - Aciertos: {aciertos}/{totales}", end='\r')
+            porc_topN = (aciertos_topN / i) * 100
+            porc_estrictos = (aciertos_estrictos / i) * 100
+            print(f"Progreso: [{progreso:.1f}%] - Top-{N}: {porc_topN:.2f}% | Estrictos: {porc_estrictos:.2f}%", end='\r')
 
-    print(f"Cantidad de aciertos (Top-{N}): {aciertos}/{totales}, esto es un {(aciertos / totales) * 100:.2f}%, ")
+    print(f"\nAciertos Top-{N}: {aciertos_topN}/{totales} ({(aciertos_topN / totales) * 100:.2f}%)")
+    print(f"Aciertos estrictos: {aciertos_estrictos}/{totales} ({(aciertos_estrictos / totales) * 100:.2f}%)")
     
-    return aciertos, totales
+    return aciertos_topN, aciertos_estrictos, totales
+
+def evaluar_cbow_np(indice_tuplas, W1, W2, N=5):
+    """
+    Evalúa un modelo CBOW devolviendo aciertos top-N (flexibles)
+    y aciertos estrictos (exactos), mostrando progreso y porcentajes parciales.
+    """
+    totales = len(indice_tuplas)
+    aciertos_topN = 0
+    aciertos_estrictos = 0
+
+    for i, (i_central, i_contextos) in enumerate(indice_tuplas):
+        # ---Propagación---
+        h = np.mean(W1[i_contextos], axis=0).reshape(-1, 1)
+        u = W2.T @ h
+        y = softmax_np(u).flatten() 
+
+        # ---Top-N---
+        top_n_indices = np.argpartition(y, -N)[-N:]
+        if np.any(top_n_indices == i_central):
+            aciertos_topN += 1
+        
+        # ---Acierto estricto (top-1)---
+        pred_top1 = np.argmax(y)
+        if pred_top1 == i_central:
+            aciertos_estrictos += 1
+
+        # ---Progreso---
+        if i % 1000 == 0 and i > 0:
+            progreso = (i / totales) * 100
+            porc_topN = (aciertos_topN / i) * 100
+            porc_estrictos = (aciertos_estrictos / i) * 100
+            print(f"Progreso: [{progreso:.1f}%] - Top-{N}: {porc_topN:.2f}% | Estrictos: {porc_estrictos:.2f}%", end='\r')
+
+    print(f"\nAciertos Top-{N}: {aciertos_topN}/{totales} ({(aciertos_topN / totales) * 100:.2f}%)")
+    print(f"Aciertos estrictos: {aciertos_estrictos}/{totales} ({(aciertos_estrictos / totales) * 100:.2f}%)")
+    
+    return aciertos_topN, aciertos_estrictos, totales
 
 def softmax_cp_t(u, axis=0):
     u_max = cp.max(u, axis=axis, keepdims=True)
@@ -221,331 +282,19 @@ def evaluar_cbow_lotes(indice_tuplas, W1, W2, N=5, batch_size=1024):
     
     return aciertos, totales
 
-# ==============================================================
-#                      FUNCIONES NICOLÁS
-# ==============================================================
+def embeber_datos(corpus: list, W1: np.ndarray, word_to_idx: dict):
+    n = len(corpus)
+    x_train = []
+    y_train = []
 
-# auxiliares_cbow.py
+    for i in range(n - 1):  # hasta penúltima palabra
+        idx_actual = word_to_idx[corpus[i]]
+        idx_siguiente = word_to_idx[corpus[i + 1]]
 
-"""
-palabras_a_indice = {}
-palabras_a_onehot = {}
+        x_train.append(W1[idx_actual])
+        y_train.append(W1[idx_siguiente])
 
-with open("corpus.txt", "r", encoding="utf-8") as f:
-    words = f.read().splitlines()
+    x_train = np.array(x_train)
+    y_train = np.array(y_train)
 
-for token in words:
-    if token not in palabras_a_indice:
-
-        index = len(palabras_a_indice)
-        palabras_a_indice[token] = index
-
-cardinal_V = len(palabras_a_indice)
-
-for token, idx in list(palabras_a_indice.items()):
-
-    one_hot_vector = np.zeros(cardinal_V)
-    one_hot_vector[idx] = 1
-    palabras_a_onehot[token] = one_hot_vector
-"""
-
-def softmax(u):
-    u_max = np.max(u)
-    e_u = np.exp(u - u_max)
-    return e_u / e_u.sum()
-
-def sigmoid(x):
-    return 1 / (1 + cp.exp(-x))
-
-def generar_tuplas(corpus, palabras_a_indice, contexto):
-
-    ## Genero una lista de todos los indices de las palabras en el corpus, posibles sin padding
-    indices = [i for i in range(contexto,(len(corpus)-contexto))]
-
-    ## Genero una lista de los contextos de las palabras de contexto
-    indices_contexto = [i for i in range(-contexto,0)] + [i for i in range(1,contexto+1)]
-
-    indices_tuplas = []
-
-    ## Por cada indice en indices, genero una tupla (indice_central, [indices_contexto])
-    for i in indices:
-
-        indices_tuplas.append((palabras_a_indice[corpus[i]], [palabras_a_indice[corpus[i+j]] for j in indices_contexto]))
-
-    return indices_tuplas      
-
-
-
-def generar_tuplas_con_negativos(corpus, palabras_a_indice, contexto, num_negativos):
-
-    ## Genero una lista de todos los indices de las palabras en el corpus, posibles sin padding
-    indices = [i for i in range(contexto,(len(corpus)-contexto))]
-
-    ## Genero una lista de los contextos de las palabras de contexto
-    indices_contexto = [i for i in range(-contexto,0)] + [i for i in range(1,contexto+1)]
-
-
-    indices_tuplas = []
-
-    ## Por cada indice en indices, genero una tupla (indice_central, [indices_contexto], [indices_negativos])
-    for i in indices:
-
-        indices_tuplas.append(
-            (palabras_a_indice[corpus[i]],  # target central
-            [palabras_a_indice[corpus[i + j]] for j in indices_contexto],  # contexto
-            obtener_negativas(corpus,i,contexto,num_negativos)))# negativos
-
-    return indices_tuplas
-
-def obtener_negativas(corpus, indice, contexto, num_negativos=5):
-    # Hasta dónde mirar (contexto + margen de negativas)
-    maximo = contexto + num_negativos // 2
-
-    # Ventana de contexto
-    inicio = max(0, indice - maximo)
-    fin = min(len(corpus), indice + maximo + 1)
-
-    # Negativas candidatas izquierda y derecha
-    izq = corpus[max(0, inicio - maximo):inicio]
-    der = corpus[fin:min(len(corpus), fin + maximo)]
-
-    # Balanceo: si falta en izquierda, saco más de derecha (y viceversa)
-    if len(izq) < num_negativos // 2:
-        faltan = (num_negativos // 2) - len(izq)
-        der = corpus[fin:min(len(corpus), fin + maximo + faltan)]
-
-    elif len(der) < num_negativos // 2:
-        faltan = (num_negativos // 2) - len(der)
-        izq = corpus[max(0, inicio - maximo - faltan):inicio]
-
-    # Filtrar: excluir la palabra central
-    candidatas = [p for p in izq + der if p != corpus[indice]]
-
-    # Convertir a índices y devolver solo las necesarias
-    return [palabras_a_indice[p] for p in candidatas[:num_negativos]]
-
-
-def generar_tuplas_con_negativos_random(corpus, palabras_a_indice, contexto, num_negativos):
-
-    ## Genero una lista de todos los indices de las palabras en el corpus, posibles sin padding
-    indices = [i for i in range(contexto,(len(corpus)-contexto))]
-
-    ## Genero una lista de los contextos de las palabras de contexto
-    indices_contexto = [i for i in range(-contexto,0)] + [i for i in range(1,contexto+1)]
-    vocabulario = list(set(range(len(palabras_a_indice))))
-
-    indices_tuplas = []
-
-    ## Por cada indice en indices, genero una tupla (indice_central, [indices_contexto], [indices_negativos])
-    for i in indices:
-
-        indices_tuplas.append(
-            (palabras_a_indice[corpus[i]],  # target central
-            [palabras_a_indice[corpus[i + j]] for j in indices_contexto],  # contexto
-            random.sample(vocabulario - set([palabras_a_indice[corpus[i + j]] for j in indices_contexto]), k=num_negativos)))# negativos
-
-    return indices_tuplas
-
-# auxiliares_skipgram.py
-
-"""
-palabras_a_indice = {}
-palabras_a_onehot = {}
-
-with open("corpus.txt", "r", encoding="utf-8") as f:
-    words = f.read().splitlines()
-
-for token in words:
-    if token not in palabras_a_indice:
-
-        index = len(palabras_a_indice)
-        palabras_a_indice[token] = index
-
-cardinal_V = len(palabras_a_indice)
-
-for token, idx in list(palabras_a_indice.items()):
-
-    one_hot_vector = np.zeros(cardinal_V)
-    one_hot_vector[idx] = 1
-    palabras_a_onehot[token] = one_hot_vector
-"""
-
-def softmax(u):
-    u_max = np.max(u)
-    e_u = np.exp(u - u_max)
-    return e_u / e_u.sum()
-
-def sigmoid(x):
-    return (cp.tanh(x / 2) + 1) / 2
-
-def generar_tuplas(corpus, palabras_a_indice, contexto):
-
-    ## Genero una lista de todos los indices de las palabras en el corpus, posibles sin padding
-    indices = [i for i in range(contexto,(len(corpus)-contexto))]
-
-    ## Genero una lista de los contextos de las palabras de contexto
-    indices_contexto = [i for i in range(-contexto,0)] + [i for i in range(1,contexto+1)]
-
-    indices_tuplas = []
-
-    ## Por cada indice en indices, genero una tupla (indice_central, [indices_contexto])
-    for i in indices:
-
-        indices_tuplas.append((palabras_a_indice[corpus[i]], [palabras_a_indice[corpus[i+j]] for j in indices_contexto]))
-
-    return indices_tuplas      
-
-
-
-def generar_tuplas_con_negativos(corpus, palabras_a_indice, contexto, num_negativos):
-
-    ## Genero una lista de todos los indices de las palabras en el corpus, posibles sin padding
-    indices = [i for i in range(contexto,(len(corpus)-contexto))]
-
-    ## Genero una lista de los contextos de las palabras de contexto
-    indices_contexto = [i for i in range(-contexto,0)] + [i for i in range(1,contexto+1)]
-
-
-    indices_tuplas = []
-
-    ## Por cada indice en indices, genero una tupla (indice_central, [indices_contexto], [indices_negativos])
-    for i in indices:
-
-        indices_tuplas.append(
-            (palabras_a_indice[corpus[i]],  # target central
-            [palabras_a_indice[corpus[i + j]] for j in indices_contexto],  # contexto
-            obtener_negativas(corpus,i,contexto,num_negativos)))# negativos
-
-    return indices_tuplas
-
-def obtener_negativas(corpus, indice, contexto, num_negativos=5):
-    # Hasta dónde mirar (contexto + margen de negativas)
-    maximo = contexto + num_negativos // 2
-
-    # Ventana de contexto
-    inicio = max(0, indice - maximo)
-    fin = min(len(corpus), indice + maximo + 1)
-
-    # Negativas candidatas izquierda y derecha
-    izq = corpus[max(0, inicio - maximo):inicio]
-    der = corpus[fin:min(len(corpus), fin + maximo)]
-
-    # Balanceo: si falta en izquierda, saco más de derecha (y viceversa)
-    if len(izq) < num_negativos // 2:
-        faltan = (num_negativos // 2) - len(izq)
-        der = corpus[fin:min(len(corpus), fin + maximo + faltan)]
-
-    elif len(der) < num_negativos // 2:
-        faltan = (num_negativos // 2) - len(der)
-        izq = corpus[max(0, inicio - maximo - faltan):inicio]
-
-    # Filtrar: excluir la palabra central
-    candidatas = [p for p in izq + der if p != corpus[indice]]
-
-    # Convertir a índices y devolver solo las necesarias
-    return [palabras_a_indice[p] for p in candidatas[:num_negativos]]
-
-
-def generar_tuplas_con_negativos_random(corpus, palabras_a_indice, contexto, num_negativos):
-
-    ## Genero una lista de todos los indices de las palabras en el corpus, posibles sin padding
-    indices = [i for i in range(contexto,(len(corpus)-contexto))]
-
-    ## Genero una lista de los contextos de las palabras de contexto
-    indices_contexto = [i for i in range(-contexto,0)] + [i for i in range(1,contexto+1)]
-    vocabulario = list(set(range(len(palabras_a_indice))))
-
-    indices_tuplas = []
-
-    ## Por cada indice en indices, genero una tupla (indice_central, [indices_contexto], [indices_negativos])
-    for i in indices:
-
-        indices_tuplas.append(
-            (palabras_a_indice[corpus[i]],  # target central
-            [palabras_a_indice[corpus[i + j]] for j in indices_contexto],  # contexto
-            random.sample(vocabulario - set([palabras_a_indice[corpus[i + j]] for j in indices_contexto]), k=num_negativos)))# negativos
-
-
-    return indices_tuplas
-
-# ==============================================================
-#                      FUNCIONES FRANCO
-# ==============================================================
-
-def generar_contextos(corpus, C):
-  pares = []
-  indices = []
-  indice = 0
-
-  while len(indices) != C:
-    if indice != C/2:
-      indices.append(indice)
-    indice += 1 #[0,1,3,4]
-
-  for i in range(C//2, len(corpus) - C//2):
-    contexto = []
-    palabra_central = corpus[i]
-
-    for j in range(len(indices)):
-      contexto.append(corpus[indices[j]])
-      indices[j] += 1
-    pares.append([contexto, palabra_central])
-
-  return pares
-
-def obtener_clave(diccionario, valor):
-  for c, v in diccionario.items():
-    if diccionario[c] == valor:
-      return c
-  
-def calcular_exitacion_e_o(c_po, W, C):
-  suma_Vps = 0
-  for palabra in c_po[0]:
-    suma_Vps += W[int(palabra)]
-  return (1/C) * suma_Vps
-
-def aplicar_softmax(u):
-  u_max = np.max(u)  # estabiliza restando el máximo
-  exp_u = np.exp(u - u_max)
-  return exp_u / np.sum(exp_u)
-
-def generar_one_hot(c_po, V_cardinal):
-  one_hot = np.zeros(V_cardinal)
-  one_hot[c_po[1]] = 1
-  return one_hot
-
-def actualizar_W(W, c_po, EH, tasa_aprendizaje, C):
-  for palabra in c_po[0]:
-    W[int(palabra)] = W[int(palabra)] - (tasa_aprendizaje * 1/C * EH) #1XN - 1xN
-  return W
-
-def crear_tokens(diccionario):
-  tokens = {}
-  with open(diccionario, 'r', encoding = 'utf-8') as dicc:
-    palabras = dicc.read()
-    palabras = palabras.strip('[]')
-    palabras = palabras.split(',')
-    for i in range(len(palabras)):
-      if palabras[i] == "'":
-        tokens[','] = i
-      else:
-        tokens[palabras[i].strip().strip("'")] = i
-  return tokens
-
-def convertir_corpus(V, corpus):
-  corpus_indices = []
-  with open(corpus, 'r', encoding = 'utf-8') as corpus:
-    palabras = corpus.read()
-    palabras = re.findall(r'[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+|[.,]', palabras)
-    for palabra in palabras:
-      if palabra in V:
-        corpus_indices.append(V[palabra])
-  return corpus_indices
-
-def generar_contextos_skipgram(corpus, C):
-  Pos_Cos = generar_contextos(corpus, C)
-  contextos_skipgram = []
-  for Po_Co in Pos_Cos:
-    for palabra_Co in Po_Co[0]:
-      contextos_skipgram.append([Po_Co[1], palabra_Co])
-  return contextos_skipgram
+    return x_train, y_train
