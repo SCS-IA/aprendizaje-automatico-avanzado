@@ -282,19 +282,59 @@ def evaluar_cbow_lotes(indice_tuplas, W1, W2, N=5, batch_size=1024):
     
     return aciertos, totales
 
-def embeber_datos(corpus: list, W1: np.ndarray, word_to_idx: dict):
-    n = len(corpus)
+def embeber_datos(corpus: list, W1: np.ndarray, word_to_idx: dict, C: int = 10):
+    n = len(corpus) - C - 1
+    N = W1.shape[1]
+    x_train = np.zeros((n, N * C), dtype=np.float32)
+    y_train = np.zeros((n, N), dtype=np.float32)
+
+    repeticiones = 0
+    vistos = set()
+
+    for i in range(C, len(corpus) - 1):
+        contexto = corpus[i - C:i]
+        siguiente = corpus[i + 1]
+        clave = (tuple(contexto), siguiente)
+
+        if clave in vistos:
+            repeticiones += 1
+        else:
+            vistos.add(clave)
+
+        contexto_idx = [word_to_idx[w] for w in contexto]
+        siguiente_idx = word_to_idx[siguiente]
+
+        x_train[i - C] = W1[contexto_idx].reshape(-1)
+        y_train[i - C] = W1[siguiente_idx]
+
+    print(f"Repeticiones con C={C}: {repeticiones}")
+    return x_train, y_train
+
+def embeber_datos2(corpus: list, W1: np.ndarray, word_to_idx: dict, C: int = 10):
     x_train = []
     y_train = []
 
-    for i in range(n - 1):  # hasta penúltima palabra
-        idx_actual = word_to_idx[corpus[i]]
-        idx_siguiente = word_to_idx[corpus[i + 1]]
+    contexto_a_central = {}
 
-        x_train.append(W1[idx_actual])
-        y_train.append(W1[idx_siguiente])
+    for i in range(C, len(corpus) - 1):
+        contexto = tuple(corpus[i - C:i])     # lo hacemos tupla solo para usarlo como clave
+        palabra_central = corpus[i + 1]
 
-    x_train = np.array(x_train)
-    y_train = np.array(y_train)
+        # Si el contexto ya apareció con otra palabra, lo salteamos
+        if contexto in contexto_a_central:
+            if contexto_a_central[contexto] != palabra_central:
+                continue
+        else:
+            contexto_a_central[contexto] = palabra_central
 
-    return x_train, y_train
+        # Convertir a embeddings
+        contexto_idx = [word_to_idx[w] for w in contexto]
+        palabra_central_idx = word_to_idx[palabra_central]
+
+        x_train.append(W1[contexto_idx].reshape(-1))
+        y_train.append(W1[palabra_central_idx])
+
+    print(f"Total de pares válidos: {len(x_train)}")
+    print(f"Contextos únicos: {len(contexto_a_central)}")
+
+    return np.array(x_train), np.array(y_train)

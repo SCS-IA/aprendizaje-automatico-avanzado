@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from funciones_auxiliares import embeber_datos, cargar_corpus, cargar_modelo, sigmoide_np
+from funciones_auxiliares import embeber_datos2, cargar_corpus, cargar_modelo, sigmoide_np
 
 corpus, vocab, vocab_size, word_to_idx, idx_to_word = cargar_corpus("corpus.txt", "corpus")
-W1, W2, N, C, eta = cargar_modelo("pesos_cbow_pcshavak-c_epoca1600.npz", "weights") # MEJOR HASTA EL MOMENTO
-x_train, y_train = embeber_datos(corpus, W1, word_to_idx)
+W1, W2, N, C, eta = cargar_modelo("pesos_cbow_pcshavak-c_epoca1600.npz", "relevant_weights") # MEJOR HASTA EL MOMENTO
+x_train, y_train = embeber_datos2(corpus, W1, word_to_idx, 10)
 
 # "Escalar" los datos del modelo
 x_train = sigmoide_np(x_train)
@@ -21,11 +21,14 @@ y_train = sigmoide_np(y_train)
 print("x_train shape:", x_train.shape)
 print("y_train shape:", y_train.shape)
 
+input_size = x_train.shape[1]
+output_size = y_train.shape[1]
+
 # Definición del modelo
 model = Sequential()
-model.add(Dense(128, input_shape=(N,), activation='gelu'))
+model.add(Dense(128, input_shape=(input_size,), activation='gelu'))
 model.add(Dense(64, activation='gelu'))
-model.add(Dense(N, activation='sigmoid'))
+model.add(Dense(output_size, activation='sigmoid'))
 
 # Compilación
 model.compile(optimizer=Adam(learning_rate=0.0001),
