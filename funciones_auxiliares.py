@@ -3,6 +3,8 @@ import cupy as cp
 import os
 import random
 import re
+import collections
+from collections import Counter
 
 # Funciones auxiliares, ideal UNIFICARLAS en algún momento
 
@@ -33,12 +35,16 @@ def cargar_corpus(nombre_archivo="corpus.txt", carpeta="corpus"):
 def inicializar_pesos(vocab_size, N, W1= None, W2=None, cparray=False):
     
     libreria = cp if cparray else np
+    tipo = libreria.float32
     if W1 is None or W2 is None:
-        W1 = libreria.random.normal(0, 0.1, (vocab_size, N))
-        W2 = libreria.random.normal(0, 0.1, (N, vocab_size))
+        W1 = libreria.random.normal(0, 0.1, (vocab_size, N)).astype(tipo)
+        W2 = libreria.random.normal(0, 0.1, (N, vocab_size)).astype(tipo)
     elif cparray:
-        W1 = cp.asarray(W1)
-        W2 = cp.asarray(W2)
+        W1 = cp.asarray(W1, dtype=tipo)
+        W2 = cp.asarray(W1, dtype=tipo)
+    else:
+        W1 = libreria.array(W1, dtype=tipo)
+        W2 = libreria.array(W2, dtype=tipo)
     
     return W1, W2
 
@@ -338,3 +344,91 @@ def embeber_datos2(corpus: list, W1: np.ndarray, word_to_idx: dict, C: int = 10)
     print(f"Contextos únicos: {len(contexto_a_central)}")
 
     return np.array(x_train), np.array(y_train)
+
+def get_stats(vocabulario):
+    pairs = collections.defaultdict(int)
+    for symbols, freq in vocabulario.items():
+        for i in range(len(symbols) - 1):
+            pairs[(symbols[i], symbols[i + 1])] += freq
+    return pairs
+
+def merge_vocab(pair, v_in):
+    v_out = {}
+    a, b = pair
+    merged_symbol = a + b
+    for symbols, freq in v_in.items():
+        new_symbols = []
+        i = 0
+        while i < len(symbols):
+            if i < len(symbols) - 1 and symbols[i] == a and symbols[i + 1] == b:
+                new_symbols.append(merged_symbol)
+                i += 2
+            else:
+                new_symbols.append(symbols[i])
+                i += 1
+        v_out[tuple(new_symbols)] = freq
+    return v_out
+
+def aplicar_bpe(palabra, merges):
+    tokens = list(palabra) + ["</w>"]
+    for a, b in merges:
+        i = 0
+        while i < len(tokens) - 1:
+            if tokens[i] == a and tokens[i + 1] == b:
+                tokens[i:i + 2] = [a + b]
+            else:
+                i += 1
+    return tokens
+
+def generar_corpus_fragmentado(corpus_path, output_dir, num_merges=500):
+    os.makedirs(output_dir, exist_ok=True)
+
+    print(f"1. Leyendo y preparando el corpus desde '{corpus_path}'...")
+    if not os.path.exists(corpus_path):
+        print(f"\nERROR: No se encontró el archivo '{corpus_path}'.")
+        return
+
+    with open(corpus_path, "r", encoding="utf-8") as f:
+        palabras = [line.strip() for line in f if line.strip()]
+
+    frecuencias = Counter(palabras)
+    vocab = {tuple(list(p) + ["</w>"]): f for p, f in frecuencias.items()}
+
+    print(f"\n2. Entrenando el modelo BPE con {num_merges} fusiones...")
+    merges = []
+    for i in range(num_merges):
+        pairs = get_stats(vocab)
+        if not pairs:
+            break
+        
+        best = max(pairs, key=pairs.get)
+        merges.append(best)
+        vocab = merge_vocab(best, vocab)
+        
+        print(f"  Fusión {i+1}/{num_merges}: {best}", end='\r')
+    
+    print("\nEntrenamiento completado.")
+
+    print("\n3. Aplicando BPE al corpus original...")
+    corpus_bpe_tokens = []
+    for palabra in palabras:
+        corpus_bpe_tokens.extend(aplicar_bpe(palabra, merges))
+    
+    corpus_bpe_path = os.path.join(output_dir, "corpus_bpe.txt")
+    with open(corpus_bpe_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(corpus_bpe_tokens))
+
+    tokens_unicos = sorted(list(set(corpus_bpe_tokens)))
+    vocab_bpe_path = os.path.join(output_dir, "vocab_bpe.txt")
+    with open(vocab_bpe_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(tokens_unicos))
+        
+    merges_path = os.path.join(output_dir, "merges.txt")
+    with open(merges_path, "w", encoding="utf-8") as f:
+        for a, b in merges:
+            f.write(f"{a} {b}\n")
+            
+    print(f"\n✅ Archivos generados en la carpeta '{output_dir}':")
+    print(f" - {os.path.basename(corpus_bpe_path)} (corpus tokenizado), tamaño: {len(corpus_bpe_tokens)} tokens")
+    print(f" - {os.path.basename(vocab_bpe_path)} (vocabulario único), tamaño: {len(tokens_unicos)} tokens")
+    print(f" - {os.path.basename(merges_path)} (fusiones aprendidas), total: {len(merges)} fusiones")

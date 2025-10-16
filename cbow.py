@@ -2,21 +2,25 @@ import numpy as np
 import cupy as cp
 from funciones_auxiliares import cargar_corpus, inicializar_pesos, softmax_cp, generar_tuplas_central_contexto, guardar_modelo
 
-def entrenar_cbow(archivo_corpus, nombre_pc, epocas=1, η=0.001, N=300, C=4, W1=None, W2=None, intervalo_guardado=50):
+def entrenar_cbow(archivo_corpus, carpeta_corpus, nombre_pc, epocas=1, η=0.001, N=300, C=4, W1=None, W2=None, intervalo_guardado=50):
     
-    corpus, vocab, vocab_size, word_to_idx, idx_to_word = cargar_corpus(archivo_corpus)
+    corpus, vocab, vocab_size, word_to_idx, idx_to_word = cargar_corpus(archivo_corpus, carpeta_corpus)
     W1, W2 = inicializar_pesos(vocab_size, N, W1, W2, cparray=True)
     indice_tuplas = generar_tuplas_central_contexto(corpus, word_to_idx, C)
     total_pares = len(indice_tuplas)
 
     print(f"Comienzo de entrenamiento con {epocas} epocas.")
     for epoca in range(epocas):
+        E_estrella = 0
         for i, (i_central, i_contextos) in enumerate(indice_tuplas):
 
             # ---Propagación---
             h = cp.mean(W1[i_contextos], axis=0).reshape(-1, 1)
             u = W2.T @ h
             y = softmax_cp(u)
+
+            # ---Error---
+            E_estrella += (1 - y[i_central])
 
             # ---Retropropagación---
             e = y.copy()
@@ -27,9 +31,9 @@ def entrenar_cbow(archivo_corpus, nombre_pc, epocas=1, η=0.001, N=300, C=4, W1=
             W1[i_contextos] -= η * (1/C*2) * EH.T
 
             if i % 1000 == 0:
-                print(f"Época {epoca}, Par: {i}/{total_pares}")
+                print(f"Época {epoca}, Par: {i}/{total_pares}", end='\r')
 
-        print(f"Fin de época: {epoca}")
+        print(f"Fin de época: {epoca}, con E* promedio={E_estrella/total_pares}")
 
         # ---Guardado de Pesos---
         if epoca % intervalo_guardado == 0 or epoca == epocas - 1:
@@ -39,4 +43,4 @@ def entrenar_cbow(archivo_corpus, nombre_pc, epocas=1, η=0.001, N=300, C=4, W1=
     print(f"Entrenamiento con {epocas} terminado.")
     return W1, W2
 
-W1, W2 = entrenar_cbow("corpus.txt", "pcshavak-c", epocas=5000, η=0.001, N=100, C=4, intervalo_guardado=50)
+W1, W2 = entrenar_cbow("corpus_bpe.txt", "BPE","pcshavak-BPE", epocas=5000, η=0.01, N=130, C=5, intervalo_guardado=50)
