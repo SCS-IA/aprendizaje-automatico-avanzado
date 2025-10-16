@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.keras
+*.npz
+franco/
+nlp-env/
+weights/
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.vrb
+*.nav
+*.snm
