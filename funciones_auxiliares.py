@@ -300,6 +300,29 @@ def embeber_datos(corpus: list, W1: np.ndarray, word_to_idx: dict, ventana: int)
     x_train = np.array(x_train)
     y_train = np.array(y_train)
     
-    print("FIn de la creacion de x_train e y_train.")
+    print("Fin de la creacion de x_train e y_train.")
+    
+    return x_train, y_train
+
+
+def embeber_datos(corpus: list, W1: np.ndarray, word_to_idx: dict, ventana: int):
+    n = len(corpus)
+    x_train = []
+    y_train = []
+
+    print("Incio de la creacion de x_train e y_train.")
+    
+    for i in range(n - ventana): 
+        palabras_ventana = np.array(corpus[i : i + ventana])
+        idx_ventana = [word_to_idx[palabra] for palabra in palabras_ventana]
+        idx_siguiente = word_to_idx[corpus[i + ventana]]
+
+        x_train.append(W1[idx_ventana].flatten())
+        y_train.append(idx_siguiente)
+
+    x_train = np.array(x_train)
+    y_train = np.array(y_train)
+    
+    print("Fin de la creacion de x_train e y_train.")
     
     return x_train, y_train
