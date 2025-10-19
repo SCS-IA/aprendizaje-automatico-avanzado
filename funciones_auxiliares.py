@@ -338,3 +338,70 @@ def embeber_datos2(corpus: list, W1: np.ndarray, word_to_idx: dict, C: int = 10)
     print(f"Contextos únicos: {len(contexto_a_central)}")
 
     return np.array(x_train), np.array(y_train)
+
+# ---Pytorch---
+
+import torch
+
+def generar_prediccion(contexto_inicial_str, longitud_maxima, model, W1, W2, word_to_idx, idx_to_word, device, tam_ventana, usar_softmax=True):
+    
+    contexto_tokens = contexto_inicial_str.lower().split()
+    palabras_generadas = list(contexto_tokens)
+    
+    ventana_actual = [''] * tam_ventana
+    tokens_a_usar = palabras_generadas[-tam_ventana:]
+    
+    inicio = tam_ventana - len(tokens_a_usar)
+    ventana_actual[inicio:] = tokens_a_usar
+    
+    embedding_dim = W1.shape[1]
+    W2_escalado_T = sigmoide_np(W2).T
+    
+    for _ in range(longitud_maxima):
+        
+        embeddings = []
+        for palabra in ventana_actual:
+            if palabra in word_to_idx:
+                idx = word_to_idx[palabra]
+                embeddings.append(W1[idx])
+            else:
+                embeddings.append(np.zeros(embedding_dim))
+        
+        x_input_np = np.concatenate(embeddings)
+        x_input_np_scaled = sigmoide_np(x_input_np)
+        
+        x_input_tensor = torch.tensor(x_input_np_scaled, dtype=torch.float32).unsqueeze(0).to(device)
+        
+        model.eval()
+        with torch.no_grad():
+            y_pred_tensor = model(x_input_tensor)
+            
+        y_pred_np = y_pred_tensor.cpu().numpy().squeeze()
+        similitudes = W2_escalado_T @ y_pred_np
+
+        if usar_softmax:
+            probs = softmax_np(similitudes)
+            idx_pred = np.random.choice(len(probs), p=probs)
+        else:
+            idx_pred = np.argmax(similitudes)
+
+        nueva_palabra = idx_to_word[idx_pred]
+        
+        palabras_generadas.append(nueva_palabra)
+        
+        ventana_actual.pop(0)
+        ventana_actual.append(nueva_palabra)
+        
+    return " ".join(palabras_generadas)
+
+def cargar_modelo_pytorch(ruta: str) -> torch.nn.Module:
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    modelo = torch.load(ruta, map_location=device, weights_only=False)
+    modelo.to(device)
+    modelo.eval()
+
+    print(f"Modelo cargado correctamente en {device}.")
+    return modelo
+
+model = cargar_modelo("PMC/modelo.pth")

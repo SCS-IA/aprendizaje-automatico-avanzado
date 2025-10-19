@@ -50,4 +50,4 @@ def entrenar_cbow(archivo_corpus, nombre_pc, epocas=1, η=0.001, N=300, C=4, W1=
     print(f"Entrenamiento con {epocas} terminado.")
     return W1, W2
 
-W1, W2 = entrenar_cbow("mini_corpus.txt", "pcshavak-mini", epocas=100, η=0.01, N=50, C=4, intervalo_guardado=10)
+W1, W2 = entrenar_cbow("mini_corpus.txt", "pcshavak-mini", epocas=1000, η=0.01, N=50, C=4, intervalo_guardado=50)
