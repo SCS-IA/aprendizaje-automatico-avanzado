@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext, filedialog
 import os
-
+import re
 from matplotlib import style
 
 try:
@@ -10,28 +10,27 @@ try:
 except Exception:
     PIL_AVAILABLE = False
 
-from aux_red_multi import predecir_cbow_onehot, generar_ventana, palabras_a_indice, indices_a_palabras, indices_a_embeddings, predecir_cbow_embedding, W1
+from aux_red_multi import predecir_cbow_onehot, generar_ventana, palabras_a_indice, indices_a_palabras, indices_a_embeddings
 from tensorflow.keras.models import load_model
 
-#MODEL_PATH = r"C:\Users\User\Documents\GitHub\Aprendizaje_Automatico\multicapa_emb_model_epoca.keras"
-MODEL_PATH = r'C:\Users\User\Documents\GitHub\Aprendizaje_Automatico\multicapa_onehot_model_epoca60.keras'
+MODEL_PATH = r"C:\Users\User\Documents\GitHub\Aprendizaje_Automatico\multicapa_onehot_model_epoca60.keras"
 model = load_model(MODEL_PATH)
 
 
 def generar_texto(texto, cantidad, model, indices_a_palabras, indices_a_embeddings, palabras_a_indice=None, topk=5):
-    out = texto
+    texto
     for i in range(cantidad):
-        palabra = predecir_cbow_onehot(out, model, indices_a_palabras, indices_a_embeddings, palabras_a_indice, topk=topk)
-        #palabra = predecir_cbow_embedding(out, model, indices_a_palabras, W1, palabras_a_indice, topk=topk)
+        palabra = predecir_cbow_onehot(texto, model, indices_a_palabras, indices_a_embeddings, palabras_a_indice, topk=topk)
         if palabra is None:
             break
-        if palabra in [',', '.', '?', ' .', ', y', ':', ';']:
-            out += '' + palabra
+        if palabra in [',', '.', '?', ', y', ':', ';']:
+            texto += '' + palabra
         elif palabra == ' .':
-            out += palabra + '\n'
+            texto += '.' + '\n\n'
         else:
-            out += ' ' + palabra
-    return out
+            texto += ' ' + palabra
+    texto = re.sub(r"\s\.\s*", ".\n\n", texto)
+    return texto
 
 
 def launch_cbow_gui():
