@@ -18,7 +18,6 @@ model = load_model(MODEL_PATH)
 
 
 def generar_texto(texto, cantidad, model, indices_a_palabras, indices_a_embeddings, palabras_a_indice=None, topk=5):
-    texto
     for i in range(cantidad):
         palabra = predecir_cbow_onehot(texto, model, indices_a_palabras, indices_a_embeddings, palabras_a_indice, topk=topk)
         if palabra is None:

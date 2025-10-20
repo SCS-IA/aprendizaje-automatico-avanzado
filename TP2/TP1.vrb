@@ -1,0 +1,15 @@
+\frametitle{Predicción Representación Contextual}
+\begin{lstlisting}[language=Python]
+ventana = np.concatenate([W[idx] for idx in tokens_idx]).flatten()
+pred_emb = modelo.predict(ventana.reshape(1, -1), verbose=0)
+pred_emb = np.asarray(pred_emb).flatten()
+
+sims = cosine_similarity(pred_emb.reshape(1, -1), W)[0]
+
+topk_idx = np.argsort(-sims)[:topk]
+
+top1 = np.random.choice(topk_idx)
+palabra_predicha = indice_a_palabras[top1]
+
+return palabra_predicha
+	\end{lstlisting}
