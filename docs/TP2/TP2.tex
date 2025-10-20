@@ -706,6 +706,26 @@ return palabra_predicha
 	\end{quote}
 \end{frame}	
 
+\begin{frame}{Estructura Multicapa (Softmax)}
+	\small
+	\textbf{Modelo:} se implementó una red neuronal de tipo \textbf{Perceptrón Multicapa (PMC)} utilizando la librería \textbf{Keras} (TensorFlow).\\[0.4em]
+	
+	\textbf{Entradas:} vector resultante de concatenar los embeddings de una \textbf{ventana de 8 palabras previas}, donde cada palabra está representada por su embedding individual.\\[0.4em]
+	
+	\textbf{Salida:} vector de probabilidades sobre el vocabulario, representando la palabra objetivo del contexto.\\[0.4em]
+	
+	\textbf{Arquitectura:}
+	\begin{itemize}
+		\item Capa oculta 1: 512 neuronas, activación \texttt{gelu}.
+		\item Capa oculta 2: 256 neuronas, activación \texttt{gelu}.
+		\item Capa oculta 3: 128 neuronas, activación \texttt{gelu}.
+		\item Capa de salida: $N_{vocab}$ neuronas, activación \texttt{softmax}.
+	\end{itemize}
+	
+	\textbf{Optimizador:} \texttt{Adam} con \texttt{learning rate = 0.0001}.\\
+	\textbf{Función de pérdida:} \texttt{Categorical Crossentropy (o Sparse Categorical Crossentropy)}.
+\end{frame}
+
 	
 
 
