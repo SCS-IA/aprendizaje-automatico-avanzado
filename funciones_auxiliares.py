@@ -415,16 +415,16 @@ def generar_corpus_fragmentado(corpus_path, output_dir, num_merges=500):
         corpus_bpe_tokens.extend(aplicar_bpe(palabra, merges))
     
     corpus_bpe_path = os.path.join(output_dir, "corpus_bpe.txt")
-    with open(corpus_bpe_path, "w", encoding="utf-8") as f:
+    with open(f'corpus_bpe_path{num_merges}', "w", encoding="utf-8") as f:
         f.write("\n".join(corpus_bpe_tokens))
 
     tokens_unicos = sorted(list(set(corpus_bpe_tokens)))
     vocab_bpe_path = os.path.join(output_dir, "vocab_bpe.txt")
-    with open(vocab_bpe_path, "w", encoding="utf-8") as f:
+    with open(f'vocab_bpe_path{num_merges}', "w", encoding="utf-8") as f:
         f.write("\n".join(tokens_unicos))
         
     merges_path = os.path.join(output_dir, "merges.txt")
-    with open(merges_path, "w", encoding="utf-8") as f:
+    with open(f'merges_path{num_merges}', "w", encoding="utf-8") as f:
         for a, b in merges:
             f.write(f"{a} {b}\n")
             

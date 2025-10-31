@@ -54,7 +54,6 @@
 
 \begin{document}
 
-
 \begin{frame}
 	\centering
 	\includegraphics[width=0.25\textwidth]{UNAHUR (2)}
@@ -66,6 +65,21 @@
 	{\small 20 de Octubre de 2025}
 \end{frame}
 
+\section{PMC}
+
+\begin{frame}[fragile]
+	\begin{center}
+		\textcolor{unahurverde}{\textbf{Consigna:}}
+	\end{center}
+	\justifying
+	Defina, implemente y entrene un perceptron multicapa para que aprenda un modelo de lenguaje usando como corpus el utilizado el TP1.
+	
+	\begin{enumerate}
+		\item Opción 1: Para la capa de salida puede usar tantas unidades como dimensión tenga la representación contextual. En este caso use una función de actualización no lineal tipo sigmoidea o tangente hiperbólica. Escale los valores de las componentes de las representaciones contextuales para que coincida con la imagen de la función de activación.
+		
+		\item Opción 2: En lugar de la capa de salida detallada en el ítem anterior, puede usar una capa softmax con tantas unidades como palabras haya en el vocabulario. En este caso use como función de error (loss) la entropía cruzada.
+	\end{enumerate}
+\end{frame}
 
 \section{Modificación de Corpus}
 
@@ -285,8 +299,6 @@ return corpus_modificado
 	\end{center}
 \end{frame}
 
-
-
 \section{Fragmentación sin BPE}
 
 \begin{frame}{}
@@ -450,6 +462,32 @@ return tokens
 	\end{lstlisting}
 \end{frame}
 
+\section{Fragmentación con BPE}
+
+\begin{frame}{BPE}
+	\justifying
+	
+	Para el caso de BPE (Byte Pair Encoding) el corpus y el vocabulario se inicia con los tokens como símbolos primarios (letras, números, etc). Luego:
+	\begin{center}
+		\begin{itemize}
+			\item Se van encontrando coincidencias de mayor cantidad de tokens unidos (priorizando tokens más largas).
+			\item Se agrupan (merge) los tokens de mayor ocurrencia $N$ cantidad de veces.
+		\end{itemize}
+		
+		\vspace{0.1cm}
+		
+		\begin{tikzpicture}[node distance=0.9cm and 0.6cm, every node/.style={font=\small}]
+			\node[draw, fill=blue!10, rounded corners] (a1) {l};
+			\node[draw, fill=blue!10, rounded corners, right=of a1] (a2) {a};
+			
+			\draw[->, thick, green!60!black] (a1.south) .. controls +(down:0.5cm) and +(down:0.5cm) .. (a2.south);
+			
+			\node[below=1.6cm of a2, draw, fill=green!10, rounded corners] (new1) {la};
+			
+			\node[below=0.3cm of new1, text=green!50!black] (msg) {Tokenización óptima por grupos};
+		\end{tikzpicture}
+	\end{center}
+\end{frame}
 
 \section{Predicción Consola}
 
@@ -674,10 +712,11 @@ return palabra_predicha
 	La generación de texto se realiza a partir de una secuencia inicial de palabras.
 	
 	\vspace{0.5em}
-	\textbf{Código:}
-	\begin{verbatim}
-		poner codigo
-	\end{verbatim}
+	
+	%\textbf{Código:}
+	%\begin{verbatim}
+	%	poner codigo
+	%\end{verbatim}
 	
 	\vspace{0.5em}
 	La función realiza:
@@ -726,9 +765,13 @@ return palabra_predicha
 	\textbf{Función de pérdida:} \texttt{Categorical Crossentropy (o Sparse Categorical Crossentropy)}.
 \end{frame}
 
-	
+\begin{frame}[fragile]{Comparación}
+	A la hora de realizar el entrenamiento se observó un mejor resultado en el PMC que tiene como salida un vector de probabilidades de la palabra del vocabulario ($\in R^{|V|}$) 
+\end{frame}
 
-
-	
+\begin{frame}{}
+	\centering
+	{\huge ¡Gracias!}\\
+\end{frame}
 	
 \end{document}

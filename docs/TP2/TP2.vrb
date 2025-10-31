@@ -1,18 +1,2 @@
-\frametitle{Generación de Texto}
-\small
-	La generación de texto se realiza a partir de una secuencia inicial de palabras.
-	
-	\vspace{0.5em}
-	\textbf{Código:}
-	\begin{verbatim}
-		poner codigo
-	\end{verbatim}
-	
-	\vspace{0.5em}
-	La función realiza:
-	\begin{enumerate}
-		\item Lectura de la secuencia inicial.
-		\item Predicción de la siguiente palabra según el tipo de salida.
-		\item Evita repeticiones consecutivas de palabras.
-		\item Actualiza la ventana de contexto y repite hasta completar la longitud deseada.
-	\end{enumerate}
+\frametitle{Comparación}
+A la hora de realizar el entrenamiento se observó un mejor resultado en el PMC que tiene como salida un vector de probabilidades de la palabra del vocabulario ($\in R^{|V|}$)
