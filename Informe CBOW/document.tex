@@ -1,104 +1,1141 @@
-% presentacion_cbob_frag_tablas.tex
-\documentclass[11pt]{beamer}
-\usetheme{CambridgeUS}
-
-
+\documentclass[12pt,a4paper]{article}
 \usepackage[spanish]{babel}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{titling}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{multicol}
 \usepackage{booktabs}
-\usepackage{caption}
+\usepackage{array}
+\usepackage{courier}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\geometry{margin=2.3cm}
+\setstretch{1.0}
+\renewcommand{\familydefault}{\rmdefault}
 
-\title[CBOW + Fragmentación]{Cómo la fragmentación del corpus mejora CBOW: \\ evaluación por palabra con accuracies top-1 y top-5}
-\author[N. Seivane]{Nicolás Seivane}
-\institute[Tu Institución]{Departamento / Laboratorio \\ Tu Institución}
-\date{\today}
+\pretitle{\begin{center}\LARGE\bfseries}
+	\posttitle{\par\end{center}\vskip 1em}
+\preauthor{\begin{center}\large}
+	\postauthor{\end{center}}
+
+
+
+\title{Informe de Resultados — Trabajo Práctico 1\\[0.5em]
+	\large Materia: Aprendizaje Automático Avanzado}
+\author{
+	Profesores: Dr.~Juan Santos, Lic.~Elimiano Churruca\\[0.3em]
+	Alumnos: Franco Serafini, Seivane Nicolás, Matías Cisnero
+}
+\date{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Aprendizaje Automático Avanzado}
+\fancyhead[R]{Trabajo Práctico 1}
+\fancyfoot[C]{\thepage}
 
 \begin{document}
+	\maketitle
+	\thispagestyle{empty}
 	
-	\begin{frame}
-		\titlepage
-	\end{frame}
+	\section*{Resumen general}
 	
-	\begin{frame}{Contenido}
-		\tableofcontents
-	\end{frame}
+	\subsection*{Métricas Utilizadas}
 	
-	\section{Motivación}
-	\begin{frame}{Motivación}
-		\begin{itemize}
-			\item CBOW aprende representaciones de palabras a partir de contextos locales.
-			\item En corpora extensos y heterogéneos, una misma palabra puede tener significados o usos diferentes según el dominio.
-			\item \textbf{Hipótesis:} fragmentar el corpus en subconjuntos coherentes mejora la capacidad del modelo para representar con precisión las palabras, aumentando el accuracy top-1 y top-5.
-		\end{itemize}
-	\end{frame}
+	\noindent Para la realización del siguiente informe se utilizará la métrica \textit{Accuracy}, la cual representa el porcentaje de predicciones correctas respecto al total de predicciones realizadas. En este caso, se introduce una ligera modificación en su aplicación. Para la predicción de la palabra central, se considera el valor con mayor probabilidad obtenido por la función \textit{soft-max} al momento de la inferencia, lo que corresponde a la métrica \textbf{Top1}. Asimismo, se evaluará la métrica \textbf{Top5}, que toma en cuenta los cinco valores más altos devueltos por la función \textit{soft-max}, considerando una predicción correcta si la palabra esperada se encuentra dentro de esos cinco primeros resultados.
 	
-	\section{CBOW y fragmentación}
-	\begin{frame}{Estrategia}
-		\begin{itemize}
-			\item Corpus dividido en $m$ fragmentos temáticos o por dominio.
-			\item Se entrena un CBOW por fragmento y luego se combinan las representaciones de cada palabra mediante:
-			\begin{enumerate}
-				\item Promedio de embeddings.
-				\item Concatenación de embeddings.
-				\item Fine-tuning global posterior.
-			\end{enumerate}
-			\item Evaluación: precisión top-1 y top-5 sobre un conjunto de predicciones por palabra.
-		\end{itemize}
-	\end{frame}
+	\begin{equation}
+		\text{Accuracy} = \frac{\text{Número de predicciones correctas}}{\text{Número total de muestras}}
+		\label{eq:accuracygeneral}
+	\end{equation}
 	
-	\section{Resultados comparativos}
-	\begin{frame}{Accuracy global vs fragmentado}
-		\begin{table}
-			\centering
-			\begin{tabular}{lcc}
-				\toprule
-				\textbf{Modelo} & \textbf{Accuracy@1} & \textbf{Accuracy@5} \\
-				\midrule
-				CBOW global & 0.741 & 0.892 \\
-				CBOW fragmentado (promedio) & 0.782 & 0.917 \\
-				CBOW fragmentado (concatenado) & \textbf{0.806} & \textbf{0.931} \\
-				CBOW fragmentado (fine-tuned) & 0.798 & 0.925 \\
-				\bottomrule
-			\end{tabular}
-			\caption{Comparación general de accuracies (valores de ejemplo).}
-		\end{table}
-	\end{frame}
+	\subsection*{Corpus sin Fragmentar}
 	
-	\begin{frame}{Accuracy por palabra representativa}
-		\begin{table}
-			\centering
-			\begin{tabular}{lcccc}
-				\toprule
-				\textbf{Palabra} & \textbf{CBOW global} & \textbf{Promedio} & \textbf{Concat.} & \textbf{Fine-tuned} \\
-				\midrule
-				energía & 0.69 / 0.87 & 0.74 / 0.91 & \textbf{0.78 / 0.93} & 0.76 / 0.92 \\
-				salud & 0.73 / 0.88 & 0.79 / 0.92 & \textbf{0.82 / 0.94} & 0.80 / 0.93 \\
-				economía & 0.76 / 0.90 & 0.80 / 0.92 & \textbf{0.83 / 0.95} & 0.81 / 0.94 \\
-				ambiente & 0.71 / 0.86 & 0.77 / 0.90 & \textbf{0.80 / 0.93} & 0.79 / 0.91 \\
-				educación & 0.68 / 0.84 & 0.74 / 0.89 & \textbf{0.78 / 0.92} & 0.76 / 0.91 \\
-				\bottomrule
-			\end{tabular}
-			\caption{Accuracy top-1 / top-5 por palabra (valores ilustrativos).}
-		\end{table}
-	\end{frame}
+	\noindent\textbf{Características del corpus:} 
+	Se realizó un método de obtención de \textit{Representaciones contextuales, CBOW}, donde se tomo a cada palabra y signo de puntuación como entrada del vocabulario, dando un total de 310.347 palabras en el corpus y un vocabulario de 27.971 tokens.
 	
-	\section{Discusión}
-	\begin{frame}{Discusión}
-		\begin{itemize}
-			\item Los modelos fragmentados logran sistemáticamente mejores accuracies.
-			\item El ensamblado por concatenación ofrece la mejor precisión, aunque a costa de mayor dimensionalidad.
-			\item El promedio de embeddings es una opción eficiente con mejoras moderadas.
-			\item Las palabras polisémicas se benefician más de la fragmentación, ya que cada fragmento modela un contexto más homogéneo.
-		\end{itemize}
-	\end{frame}
 	
-	\section{Conclusiones}
-	\begin{frame}{Conclusiones}
-		\begin{itemize}
-			\item La fragmentación del corpus mejora los resultados de CBOW, reflejado en mayores accuracies top-1 y top-5.
-			\item Los vocabularios compuestos por fragmento permiten representar de forma más contextual las palabras.
-			\item Trabajo futuro: extender a modelos contextuales (Skip-gram, BERT fragmentado) y explorar combinación de embeddings vía reducción (PCA o autoencoders).
-		\end{itemize}
-	\end{frame}
+	
+	\noindent\textbf{Configuración del modelo 1:}
+	\begin{itemize}
+		\item Neuronas ocultas: 130
+		\item Tamaño de contexto: 2
+		\item Épocas: 1250
+		\item Tasa de aprendizaje: 0.001
+		\item Palabras mal predichas: 3790
+	\end{itemize}
+	
+	\noindent\textbf{Resultados finales del modelo 1:}
+	
+
+	\begin{center}
+		\begin{tabular}{@{}ll@{}}
+			\toprule
+			\textbf{Métrica} & \textbf{Valor} \\ 
+			\midrule
+			Top1 & 67.72\% \\
+			Top5 & 86.32\% \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	
+	
+	\noindent\textbf{Configuración del modelo 2:}
+	\begin{itemize}
+		\item Neuronas ocultas: 100
+		\item Tamaño de contexto: 4
+		\item Épocas: 1600
+		\item Tasa de aprendizaje: 0.001
+	\end{itemize}
+	
+	\noindent\textbf{Resultados finales del modelo 2:}\\
+	
+
+	\begin{center}
+		\begin{tabular}{@{}ll@{}}
+			\toprule
+			\textbf{Métrica} & \textbf{Valor} \\ 
+			\midrule
+			Top1 & 65.79\% \\
+			Top5 & 86.01\% \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	
+	\newpage
+	\section*{Palabras que no se predijeron bien}
+	\begin{multicols}{3}
+		\footnotesize
+		\begin{verbatim}
+.              2818
+,              2242
+y              1552
+.              1316
+que            1085
+de             1068
+no              782
+a               776
+en              669
+pero            576
+lo              479
+la              478
+el              430
+con             417
+se              384
+como            373
+es              357
+por             350
+o               308
+?               299
+para            299
+era             292
+un              282
+una             281
+yo              247
+cuando          244
+más             240
+oliveira        238
+eso             235
+si              234
+le              216
+ya              212
+dijo            205
+todo            203
+me              191
+porque          181
+del             179
+los             171
+al              165
+así             148
+;               144
+qué             142
+su              140
+:               129
+nada            123
+él              123
+estaba          123
+siempre         122
+hasta           122
+después         122
+algo            121
+vos             119
+las             118
+ahora           117
+te              117
+talita          112
+maga            111
+mismo           108
+sí              102
+horacio          99
+poco             99
+está             98
+ahí              97
+había            95
+otro             94
+bien             91
+noche            90
+menos            90
+traveler         90
+ella             86
+vez              86
+sin              85
+mejor            85
+dos              84
+entonces         84
+casi             83
+hay              82
+uno              81
+tiempo           80
+también          79
+otra             74
+donde            72
+mano             69
+tenía            69
+hacer            68
+tan              68
+ese              67
+vida             66
+aunque           65
+tiene            63
+casa             63
+sobre            62
+ser              62
+usted            61
+esa              61
+aquí             60
+decir            59
+ronald           57
+cosa             57
+mi               57
+mamá             57
+cara             55
+parece           55
+todavía          54
+cosas            54
+viejo            54
+va               53
+esto             53
+gregorovius      53
+ver              52
+día              51
+tarde            51
+hombre           50
+solamente        49
+realidad         48
+hace             48
+mundo            48
+tanto            47
+mientras         47
+sé               47
+entre            45
+rocamadour       45
+mucho            45
+dice             44
+fuera            44
+cama             44
+boca             44
+etienne          44
+fue              43
+puerta           43
+verdad           42
+babs             42
+veces            42
+desde            42
+antes            41
+claro            41
+pensar           40
+lado             40
+mal              40
+mí               40
+ventana          39
+aire             39
+pieza            39
+sueño            39
+ni               39
+fin              38
+nos              38
+mañana           38
+mirando          38
+manú             38
+
+			
+		\end{verbatim}
+	\end{multicols}
+	
+	\newpage
+	\section*{Análisis de contextos}
+	
+	\noindent Considerando los resultados obtenidos y tras realizar pruebas con distintos modelos que presentaron valores similares de acierto y error, se decidió analizar las frecuencias de las palabras que fueron incorrectamente predichas. A continuación, se muestran aquellas palabras que se predicen de forma errónea en más de 500 ocasiones, junto con las palabras que con mayor frecuencia aparecen a su derecha e izquierda. El objetivo de este análisis es combinar esta información posteriormente con el fin de mejorar el desempeño general del modelo.
+	
+\begin{multicols}{2}
+	\raggedcolumns
+	\noindent\textbf{Palabras más frecuentes cerca de \texttt{'.'} (2818 apariciones):}
+	\begin{verbatim}
+		.: 1910
+		no: 421
+		pero: 324
+		la: 324
+		y: 318
+	\end{verbatim}
+	
+	\noindent\textbf{Palabras más frecuentes cerca de \texttt{','} (2242 apariciones):}
+	\begin{verbatim}
+		y: 1992
+		pero: 755
+		la: 696
+		que: 609
+		el: 576
+	\end{verbatim}
+	
+	\noindent\textbf{Palabras más frecuentes cerca de \texttt{'y'} (1552 apariciones):}
+	\begin{verbatim}
+		,: 1992
+		el: 411
+		la: 383
+		se: 323
+		.: 318
+	\end{verbatim}
+	
+	\noindent\textbf{Palabras más frecuentes cerca de \texttt{'. '} (1316 apariciones):}
+	\begin{verbatim}
+		no: 227
+		.: 204
+		oliveira: 116
+		la: 113
+		por: 112
+	\end{verbatim}
+	
+	\noindent\textbf{Palabras más frecuentes cerca de \texttt{'que'} (1085 apariciones):}
+	\begin{verbatim}
+		lo: 788
+		,: 609
+		se: 571
+		no: 503
+		de: 475
+	\end{verbatim}
+	
+	\noindent\textbf{Palabras más frecuentes cerca de \texttt{'de'} (1068 apariciones):}
+	\begin{verbatim}
+		la: 1854
+		los: 659
+		,: 484
+		que: 475
+		las: 466
+	\end{verbatim}
+	
+	\noindent\textbf{Palabras más frecuentes cerca de \texttt{'no'} (782 apariciones):}
+	\begin{verbatim}
+		,: 553
+		que: 503
+		.: 421
+		se: 364
+		. : 227
+	\end{verbatim}
+	
+	\noindent\textbf{Palabras más frecuentes cerca de \texttt{'a'} (776 apariciones):}
+	\begin{verbatim}
+		la: 977
+		,: 417
+		.: 253
+		y: 249
+		los: 245
+	\end{verbatim}
+	
+	\noindent\textbf{Palabras más frecuentes cerca de \texttt{'en'} (669 apariciones):}
+	\begin{verbatim}
+		el: 1219
+		la: 1101
+		,: 435
+		que: 394
+		un: 336
+	\end{verbatim}
+	
+	\noindent\textbf{Palabras más frecuentes cerca de \texttt{'pero'} (576 apariciones):}
+	\begin{verbatim}
+		,: 755
+		.: 324
+		no: 145
+		. : 91
+		el: 58
+	\end{verbatim}
+\end{multicols}
+	
+	
+	\subsection*{Corpus Fragmentado por Frecuencias}
+	
+	\noindent\textbf{Características del corpus:} 
+	Se utilizó un modelo de fragmentación explicado anteriormente, dando un total de 289.919 palabras en el corpus y un vocabulario de 28.030 tokens. Se agruparon en un único \textit{token} aquellas palabras que aparecían más de 500 veces y que, además, compartían un contexto inmediato (de una posición de distancia) en más de 200 ocasiones. Este proceso se aplicó de forma iterativa hasta que no fue posible realizar más combinaciones (\textit{merges}).
+	
+
+	\noindent\textbf{Configuración del modelo:}
+	\begin{itemize}
+		\item Neuronas ocultas: 130
+		\item Tamaño de contexto: 5
+		\item Épocas: 1000
+		\item Tasa de aprendizaje: 0.01
+		\item Palabras mal predichas: 132
+	\end{itemize}
+	
+	\noindent\textbf{Resultados finales:}
+	
+	\begin{center}
+		\begin{tabular}{@{}ll@{}}
+			\toprule
+			\textbf{Métrica} & \textbf{Valor} \\ 
+			\midrule
+			Top1 & 94.50\% \\
+			Top5 & 99.10\% \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	
+
+	
+	
+	\newpage
+	\section*{Palabras que no se predijeron bien}
+	\begin{multicols}{3}
+		\footnotesize
+		\begin{verbatim}
+,                450
+.                321
+.                307
+de               127
+y                109
+que              105
+a                101
+no                92
+la                68
+se                55
+en                47
+el                45
+por               41
+es                37
+me                36
+, y               36
+lo                36
+talita            35
+con               32
+?                 27
+un                26
+yo                25
+era               17
+eso               17
+o                 15
+del               14
+una               14
+todo              14
+oliveira          13
+como              13
+para              13
+le                11
+horacio           11
+más               11
+te                11
+ya                10
+dijo              10
+traveler          10
+. .                9
+vos                9
+si                 8
+, pero             8
+al                 8
+. . .              7
+de la              7
+sí                 7
+gregorovius        7
+lo que             6
+él                 6
+a la               6
+siempre            6
+los                5
+, no               5
+decir              5
+mi                 4
+bien               4
+porque             4
+sin                4
+después            4
+ella               4
+otro               4
+qué                3
+cuando             3
+mejor              3
+estaba             3
+babs               3
+menos              3
+tiempo             3
+, que              3
+mismo              3
+ahora              2
+:                  2
+dos                2
+tarde              2
+vez                2
+así                2
+su                 2
+pero               2
+había              2
+otra               2
+en el              2
+las                2
+hay                2
+algo               2
+dijo oliveira      2
+va                 2
+sé                 2
+está               2
+ronald             2
+hablar             1
+entonces           1
+hacer              1
+, en               1
+no ,               1
+fuera              1
+de que             1
+hombre             1
+aquí               1
+sabe               1
+casi               1
+que no             1
+mucho              1
+ossip              1
+wong               1
+empezó             1
+suerte             1
+desde              1
+etienne            1
+. no               1
+usted              1
+miedo              1
+viejo              1
+acuerdo            1
+cosas              1
+entrar             1
+apenas             1
+maga               1
+quiero             1
+manú               1
+quiere             1
+donde              1
+, de               1
+pensar             1
+parece             1
+izquierda          1
+estar              1
+calor              1
+todavía            1
+poco               1
+esto               1
+ahí                1
+aunque             1
+
+		\end{verbatim}
+	\end{multicols}
+	
+		\newpage
+	\section*{Análisis de contextos}
+	
+	\begin{multicols}{2}
+		\raggedcolumns
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{,} (450 apariciones):}
+		\begin{verbatim}
+			una: 279
+			los: 265
+			por: 241
+			es: 232
+			como: 222
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{. } (321 apariciones):}
+		\begin{verbatim}
+			no: 201
+			. .: 190
+			la: 112
+			por: 112
+			y: 97
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{.} (307 apariciones):}
+		\begin{verbatim}
+			a: 224
+			en: 192
+			por: 169
+			es: 143
+			se: 141
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{de} (127 apariciones):}
+		\begin{verbatim}
+			su: 194
+			y: 149
+			después: 107
+			.: 102
+			lo: 100
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{y} (109 apariciones):}
+		\begin{verbatim}
+			la: 285
+			se: 272
+			los: 188
+			a: 159
+			de: 149
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{que} (105 apariciones):}
+		\begin{verbatim}
+			en: 247
+			me: 195
+			es: 183
+			le: 179
+			hay: 178
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{a} (101 apariciones):}
+		\begin{verbatim}
+			los: 235
+			.: 224
+			va: 209
+			un: 195
+			las: 191
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{no} (92 apariciones):}
+		\begin{verbatim}
+			se: 262
+			. : 201
+			es: 133
+			ya: 122
+			me: 115
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{la} (68 apariciones):}
+		\begin{verbatim}
+			y: 285
+			maga: 271
+			por: 266
+			con: 265
+			dijo: 146
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{se} (55 apariciones):}
+		\begin{verbatim}
+			y: 272
+			no: 262
+			.: 141
+			le: 109
+			había: 104
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{en} (47 apariciones):}
+		\begin{verbatim}
+			que: 247
+			los: 229
+			una: 225
+			.: 192
+			las: 177
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{el} (45 apariciones):}
+		\begin{verbatim}
+			por: 232
+			con: 223
+			todo: 119
+			, y: 96
+			. : 91
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{por} (41 apariciones):}
+		\begin{verbatim}
+			la: 266
+			qué: 262
+			,: 241
+			el: 232
+			.: 169
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{es} (37 apariciones):}
+		\begin{verbatim}
+			,: 232
+			que: 183
+			.: 143
+			no: 133
+			un: 131
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{me} (36 apariciones):}
+		\begin{verbatim}
+			que: 195
+			,: 167
+			.: 126
+			no: 115
+			y: 80
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{, y} (36 apariciones):}
+		\begin{verbatim}
+			el: 96
+			la: 86
+			que: 76
+			en: 62
+			después: 59
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{lo} (36 apariciones):}
+		\begin{verbatim}
+			a: 162
+			mejor: 157
+			,: 153
+			por: 118
+			mismo: 105
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{talita} (35 apariciones):}
+		\begin{verbatim}
+			dijo: 92
+			.: 89
+			,: 73
+			. : 48
+			a: 37
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{con} (32 apariciones):}
+		\begin{verbatim}
+			la: 265
+			el: 223
+			un: 201
+			una: 140
+			los: 123
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{?} (27 apariciones):}
+		\begin{verbatim}
+			no: 69
+			qué: 40
+			dijo: 29
+			,: 25
+			preguntó: 24
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{un} (26 apariciones):}
+		\begin{verbatim}
+			poco: 277
+			como: 224
+			con: 201
+			a: 195
+			es: 131
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{yo} (25 apariciones):}
+		\begin{verbatim}
+			,: 171
+			.: 141
+			que: 90
+			y: 78
+			no: 72
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{era} (17 apariciones):}
+		\begin{verbatim}
+			,: 110
+			que: 88
+			no: 79
+			un: 77
+			una: 72
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{eso} (17 apariciones):}
+		\begin{verbatim}
+			,: 114
+			que: 96
+			todo: 79
+			por: 70
+			es: 62
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{o} (15 apariciones):}
+		\begin{verbatim}
+			,: 194
+			de: 58
+			el: 38
+			dos: 37
+			en: 35
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{del} (14 apariciones):}
+		\begin{verbatim}
+			,: 52
+			mundo: 47
+			lado: 46
+			colorado: 39
+			tiempo: 35
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{una} (14 apariciones):}
+		\begin{verbatim}
+			,: 279
+			en: 225
+			con: 140
+			como: 134
+			es: 118
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{todo} (14 apariciones):}
+		\begin{verbatim}
+			el: 119
+			,: 91
+			eso: 79
+			.: 78
+			de: 74
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{oliveira} (13 apariciones):}
+		\begin{verbatim}
+			,: 115
+			.: 113
+			a: 76
+			se: 70
+			. : 66
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{como} (13 apariciones):}
+		\begin{verbatim}
+			un: 224
+			,: 222
+			si: 211
+			una: 134
+			es: 84
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{para} (13 apariciones):}
+		\begin{verbatim}
+			que: 147
+			,: 101
+			.: 64
+			la: 47
+			no: 44
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{le} (11 apariciones):}
+		\begin{verbatim}
+			que: 179
+			,: 131
+			se: 109
+			y: 92
+			no: 91
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{horacio} (11 apariciones):}
+		\begin{verbatim}
+			,: 102
+			. : 38
+			.: 29
+			a: 23
+			se: 20
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{más} (11 apariciones):}
+		\begin{verbatim}
+			que: 161
+			,: 71
+			vez: 67
+			lo: 59
+			bien: 59
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{te} (11 apariciones):}
+		\begin{verbatim}
+			que: 100
+			no: 79
+			.: 61
+			,: 58
+			vos: 38
+		\end{verbatim}
+		
+	\end{multicols}
+	
+	
+	\subsection*{Corpus Fragmentado con BPE}
+	
+	\noindent\textbf{Características del corpus:} 
+	Se utilizó un modelo de fragmentación BPE con 10.000 merges, dando un total de 359.142 palabras en el corpus y un vocabulario de 9.676 tokens.
+	
+	\noindent\textbf{Configuración del modelo:}
+	\begin{itemize}
+		\item Neuronas ocultas: 130
+		\item Tamaño de contexto: 15
+		\item Épocas: 2000
+		\item Tasa de aprendizaje: 0.01
+		\item Palabras mal predichas: 136
+	\end{itemize}
+	
+	\noindent\textbf{Resultados finales:}
+	
+	\begin{center}
+		\begin{tabular}{@{}ll@{}}
+			\toprule
+			\textbf{Métrica} & \textbf{Valor} \\ 
+			\midrule
+			Top1 & 81.10\% \\
+			Top5 & 95.53\% \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	
+	\newpage
+	\section*{Análisis de contextos}
+	
+	\begin{multicols}{2}
+		\raggedcolumns
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{.</w>} (4209 apariciones):}
+		\begin{verbatim}
+			.</w>: 2320
+			no</w>: 651
+			la</w>: 445
+			y</w>: 430
+			pero</w>: 415
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{,</w>} (3738 apariciones):}
+		\begin{verbatim}
+			y</w>: 2016
+			pero</w>: 757
+			la</w>: 720
+			que</w>: 619
+			el</w>: 585
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{el</w>} (1077 apariciones):}
+		\begin{verbatim}
+			en</w>: 1224
+			,</w>: 585
+			que</w>: 477
+			y</w>: 415
+			.</w>: 408
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{de</w>} (999 apariciones):}
+		\begin{verbatim}
+			la</w>: 1867
+			los</w>: 670
+			,</w>: 505
+			las</w>: 483
+			que</w>: 481
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{a</w>} (857 apariciones):}
+		\begin{verbatim}
+			la</w>: 999
+			,</w>: 458
+			.</w>: 357
+			y</w>: 263
+			los</w>: 251
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{la</w>} (738 apariciones):}
+		\begin{verbatim}
+			de</w>: 1867
+			en</w>: 1115
+			a</w>: 999
+			,</w>: 720
+			maga</w>: 463
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{y</w>} (651 apariciones):}
+		\begin{verbatim}
+			,</w>: 2016
+			.</w>: 430
+			el</w>: 415
+			la</w>: 393
+			se</w>: 326
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{que</w>} (642 apariciones):}
+		\begin{verbatim}
+			lo</w>: 790
+			,</w>: 619
+			se</w>: 573
+			no</w>: 504
+			de</w>: 481
+		\end{verbatim}
+		
+		\noindent\textbf{Palabras más frecuentes cerca de \texttt{en</w>} (587 apariciones):}
+		\begin{verbatim}
+			el</w>: 1224
+			la</w>: 1115
+			,</w>: 459
+			que</w>: 405
+			.</w>: 374
+		\end{verbatim}
+	\end{multicols}
+	
+	
+	\newpage
+	\section*{Palabras que no se predijeron bien}
+	\begin{multicols}{3}
+		\footnotesize
+		\begin{verbatim}
+			.</w>              4209
+			,</w>              3738
+			el</w>             1077
+			de</w>              999
+			a</w>               857
+			la</w>              738
+			y</w>               651
+			que</w>             642
+			en</w>              587
+			un</w>              388
+			no</w>              385
+			se</w>              354
+			oliveira</w>        266
+			del</w>             252
+			lo</w>              196
+			dijo</w>            123
+			por</w>              73
+			como</w>             66
+			una</w>              48
+			los</w>              42
+			me</w>               31
+			?</w>                28
+			con</w>              24
+			le</w>               16
+			te</w>               14
+			era</w>              13
+			es</w>               12
+			las</w>               9
+			traveler</w>          9
+			yo</w>                9
+			horacio</w>           8
+			así</w>               6
+			todo</w>              6
+			tu</w>                6
+			hasta</w>             5
+			eso</w>               5
+			vos</w>               4
+			ella</w>              4
+			sí</w>                4
+			ronald</w>            4
+			al</w>                4
+			o</w>                 4
+			gekrepten</w>         4
+			os</w>                3
+			después</w>           3
+			pero</w>              3
+			más</w>               3
+			algo</w>              3
+			está</w>              3
+			había</w>             3
+			les</w>               3
+			gregorovius</w>       3
+			maga</w>              2
+			babs</w>              2
+			ese</w>               2
+			gran</w>              2
+			camas</w>             2
+			cuando</w>            2
+			noche</w>             2
+			amor</w>              2
+			qué</w>               2
+			cosas</w>             2
+			tiempo</w>            2
+			decía</w>             2
+			lucía</w>             1
+			yes</w>               1
+			re                    1
+			porque</w>            1
+			oh</w>                1
+			ya</w>                1
+			entonces</w>          1
+			estás</w>             1
+			ver                   1
+			sin</w>               1
+			esta</w>              1
+			siempre</w>           1
+			club</w>              1
+			sé</w>                1
+			just                  1
+			muy</w>               1
+			bajo</w>              1
+			enormemente</w>       1
+			ossip</w>             1
+			nos</w>               1
+			aba</w>               1
+			célestin</w>          1
+			podían</w>            1
+			tanto</w>             1
+			señora</w>            1
+			jo                    1
+			tarde</w>             1
+			cualquier</w>         1
+			frío</w>              1
+			mucho</w>             1
+			siquiera</w>          1
+			tablón</w>            1
+			su</w>                1
+			dice</w>              1
+			esperá</w>            1
+			ser</w>               1
+			claro</w>             1
+			cuenta</w>            1
+			kibbutz</w>           1
+			sopa</w>              1
+			bueno</w>             1
+			otro</w>              1
+			tan</w>               1
+			aunque</w>            1
+			e</w>                 1
+			ahí</w>               1
+			ventana</w>           1
+			dos</w>               1
+			eleg                  1
+			ke</w>                1
+			apenas</w>            1
+			hace</w>              1
+			malo</w>              1
+			pieza</w>             1
+			puerta</w>            1
+			cama<</w>             1
+			todavía</w>           1
+			i                     1
+			rojo</w>              1
+			amarillo</w>          1
+			horrible</w>          1
+			efectos/w>            1
+			estaba</w>            1
+			hacía</w>             1
+			ver</w>               1
+			ojos</w>              1
+			papeles</w>           1
+			entrada</w>           1
+			s                     1
+			para</w>              1
+			vida</w>              1
+			café</w>              1
+			
+		\end{verbatim}
+	\end{multicols}
+	
+\newpage	
+	
+\noindent A continuación, se presentan los mejores valores obtenidos para cada método evaluado, considerando las métricas \textbf{Top1} y \textbf{Top5}. Estos resultados permiten comparar el rendimiento general de los distintos métodos en términos de precisión de predicción de la palabra central.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.8\textwidth]{mejores_cbow}
+	\caption{Comparación de las métricas \textbf{Top1} y \textbf{Top5} para los distintos métodos evaluados.}
+	\label{fig:mejores_valores_modelos}
+\end{figure}
+
+\noindent Como se observa en la Figura~\ref{fig:mejores_valores_modelos}, los métodos fragmentados presentan comportamientos similares en \textbf{Top5}, pero sin dudas hay un claro ganados. El análisis de estas variaciones permite seleccionar los parámetros más adecuados y determinar qué configuraciones de entrenamiento logran un mejor equilibrio entre exactitud y generalización. Como prueba quedaría ver si continuando las agrupaciones de tokens con umbrales más chicos mejora el método.	
+	
+	
+!! Muchas gracias ¡¡
 	
 \end{document}
