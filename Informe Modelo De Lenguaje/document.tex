@@ -1,0 +1,592 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{titling}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{courier}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{float}
+\geometry{margin=2.3cm}
+\setstretch{1.0}
+\renewcommand{\familydefault}{\rmdefault}
+
+\pretitle{\begin{center}\LARGE\bfseries}
+	\posttitle{\par\end{center}\vskip 1em}
+\preauthor{\begin{center}\large}
+	\postauthor{\end{center}}
+
+
+
+\title{Informe de Resultados — Trabajo Práctico 1\\[0.5em]
+	\large Materia: Aprendizaje Automático Avanzado}
+\author{
+	Profesores: Dr.~Juan Santos, Lic.~Elimiano Churruca\\[0.3em]
+	Alumnos: Franco Serafini, Seivane Nicolás, Matías Cisnero
+}
+\date{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Aprendizaje Automático Avanzado}
+\fancyhead[R]{Trabajo Práctico 2}
+\fancyfoot[C]{\thepage}
+
+\begin{document}
+	\maketitle
+	\thispagestyle{empty}
+	
+	\section*{Resumen general}
+	
+	\subsection*{Métricas Utilizadas}
+	
+	\noindent Para la realización del siguiente informe se utilizará la métrica \textit{Accuracy}, la cual representa el porcentaje de predicciones correctas respecto al total de predicciones realizadas. En este caso, se introduce una ligera modificación en su aplicación. Para la predicción de la palabra siguiente, se considera el valor con mayor probabilidad obtenido por la función \textit{soft-max} al momento de la inferencia, lo que corresponde a la métrica \textbf{Accuracy}.
+	
+	\begin{equation}
+		\text{Accuracy} = \frac{\text{Número de predicciones correctas}}{\text{Número total de muestras}}
+		\label{eq:accuracygeneral}
+	\end{equation}
+	
+	\subsection*{Arquitecturas utilizadas para \textit{one-hot}}
+	
+	\noindent
+	En esta sección analizamos las arquitecturas cuya entrada son los \textit{embeddings} obtenidos en el trabajo práctico anterior, mientras que la salida esperada es un vector \textit{one-hot} de dimensión igual al tamaño del vocabulario. En dicho vector, el índice con mayor valor (probabilidad) corresponde a la palabra siguiente que la red debe predecir.
+	
+	\noindent
+	Inicialmente se consideró generar los vectores \textit{one-hot} completos para utilizarlos como salida. Sin embargo, esta estrategia produjo problemas de memoria debido al pesado tamaño de estos vectores, lo cual hacía imposible e incluso inviable el entrenamiento. Para resolver este inconveniente, se utilizó la representación \textit{SparseCategoricalCrossentropy}, que permite indicar la clase correcta mediante un único valor entero: el índice que debería tener valor 1 en el vector \textit{one-hot}. De esta manera, se evita la creación de vectores completos y se reduce significativamente el uso de memoria sin alterar el comportamiento del modelo.
+	
+	\noindent
+	Se evaluaron distintas arquitecturas de redes neuronales multicapa, así como diferentes valores de la tasa de aprendizaje (\(\eta\)), en algunas casos se pudo guardar el valor de $\eta$, en otros casos solo reporta el valor de la métrica con el mejor $\eta$ que se encontro.
+	
+	\noindent\textbf{Arquitectura 1:} En la Tabla~\ref{tab:primeraMCPonehot} se encuentra la primera arquitectura.
+	
+	\begin{table}[H]
+		\centering
+		\ttfamily
+		\begin{tabular}{l l r}
+			\hline
+			\textbf{Capa} & \textbf{Neuronas} & \textbf{Activación} \\
+			\hline
+			Entrada (\textit{embeddings}) & (1300)     & - \\
+			Densa                & (1024)    & gelu \\
+			Densa  				 & (502)    & gelu \\
+			Densa                & (1024)    & gelu \\
+			Salida 				& (28030)    & softmax \\
+			\hline
+		\end{tabular}
+		\caption{Resumen de la arquitectura MCP con salida one-hot 1.}
+		\label{tab:primeraMCPonehot}
+	\end{table}
+	
+	
+	
+	\noindent\textbf{Resultados finales de la arquitectura 1:} En la Tabla~\ref{tab:primerResultado} se encuentran los resultados.
+	
+	\begin{table}[H]
+	\begin{center}
+	\begin{tabular}{@{}ll@{}}
+		\toprule
+		\textbf{Métrica} & \textbf{Valor} \\ 
+		\midrule
+		Accuracy & 60.00\% \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:primerResultado}
+		\caption{Resultados de la Arquitectura 1}
+\end{center}
+
+	\end{table}
+
+
+
+	\noindent\textbf{Arquitectura 2:} En la Tabla~\ref{tab:segundaMCPonehot} se encuentra la segunda arquitectura.
+
+\begin{table}[H]
+	\centering
+	\ttfamily
+	\begin{tabular}{l l r}
+		\hline
+		\textbf{Capa} & \textbf{Neuronas} & \textbf{Activación} \\
+		\hline
+		Entrada (\textit{embeddings}) & (1300)     & - \\
+		Densa                & (2000)    & gelu \\
+		Densa  				 & (3000)    & gelu \\
+		Densa                & (5000)    & gelu \\
+		Densa                & (6000)    & gelu \\
+		Salida & (28030)    & softmax \\
+		\hline
+		\textbf{Valor de $\eta$} & 0.001 & -
+
+	\end{tabular}
+	\caption{Resumen de la arquitectura MCP con salida one-hot 2.}
+	\label{tab:segundaMCPonehot}
+\end{table}
+
+
+
+\noindent\textbf{Resultados finales de la arquitectura 2:} En la Tabla~\ref{tab:segundoResultado} se encuentran los resultados.
+
+\begin{table}[H]
+\begin{center}
+	\begin{tabular}{@{}ll@{}}
+		\toprule
+		\textbf{Métrica} & \textbf{Valor} \\ 
+		\midrule
+		Accuracy & 80.00\% \\
+		\bottomrule
+	\end{tabular}
+	\caption{Resultados de la Arquitectura 2}
+	\label{tab:segundoResultado}
+	
+\end{center}
+\end{table}
+
+
+
+	\noindent\textbf{Arquitectura 3:} En la Tabla~\ref{tab:terceraMCPonehot} se encuentra la tercera arquitectura.
+
+\begin{table}[H]
+	\centering
+	\ttfamily
+	\begin{tabular}{l l r}
+		\hline
+		\textbf{Capa} & \textbf{Neuronas} & \textbf{Activación} \\
+		\hline
+		Entrada (\textit{embeddings}) & (1300)     & - \\
+		Densa                & (2000)    & gelu \\
+		Densa  				 & (3000)    & gelu \\
+		Densa                & (5000)    & gelu \\
+		Densa                & (6000)    & gelu \\
+		Salida & (28030)    & softmax \\
+		\hline
+  		\textbf{Valor de $\eta$} & 0.004 
+	\end{tabular}
+	\caption{Resumen de la arquitectura MCP con salida one-hot 3.}
+	\label{tab:terceraMCPonehot}
+\end{table}
+
+
+
+\noindent\textbf{Resultados finales de la arquitectura 3:} En la Tabla~\ref{tab:tercerResultado} se encuentran los resultados.
+
+\begin{table}[H]
+\begin{center}
+	\begin{tabular}{@{}ll@{}}
+		\toprule
+		\textbf{Métrica} & \textbf{Valor} \\ 
+		\midrule
+		Accuracy & 90.00\% \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:tercerResultado}
+		\caption{Resultados de la Arquitectura 3}
+\end{center}
+\end{table}
+
+	
+	
+\noindent\textbf{Arquitectura 4:} En la Tabla~\ref{tab:cuartaaMCPonehot} se encuentra la primera arquitectura.
+
+\begin{table}[H]
+	\centering
+	\ttfamily
+	\begin{tabular}{l l r}
+		\hline
+		\textbf{Capa} & \textbf{Neuronas} & \textbf{Activación} \\
+		\hline
+		Entrada (\textit{embeddings}) & (1300)     & - \\
+		Densa                & (1024)    & gelu \\
+		Densa  				 & (502)    & gelu \\
+		Densa  				 & (502)    & gelu \\
+		Densa                & (1024)    & gelu \\
+		Salida 				& (28030)    & softmax \\
+		\hline
+	\end{tabular}
+	\caption{Resumen de la arquitectura MCP con salida one-hot 4.}
+	\label{tab:cuartaaMCPonehot}
+\end{table}
+
+
+
+\noindent\textbf{Resultados finales de la arquitectura 4:} En la Tabla~\ref{tab:cuartoResultado} se encuentran los resultados.
+
+\begin{table}[H]
+\begin{center}
+	\begin{tabular}{@{}ll@{}}
+		\toprule
+		\textbf{Métrica} & \textbf{Valor} \\ 
+		\midrule
+		Accuracy & 60.00\% \\
+		\bottomrule
+	\end{tabular}
+		\caption{Resultados de la Arquitectura 4}
+	\label{tab:cuartoResultado}
+\end{center}
+\end{table}
+
+	
+	
+	
+\noindent\textbf{Arquitectura 5:} En la Tabla~\ref{tab:quintaMCPonehot} se encuentra la quinta arquitectura.
+
+\begin{table}[H]
+	\centering
+	\ttfamily
+	\begin{tabular}{l l r}
+		\hline
+		\textbf{Capa} & \textbf{Neuronas} & \textbf{Activación} \\
+		\hline
+		Entrada (\textit{embeddings}) & (1300)     & - \\
+		Densa                & (1024)    & gelu \\
+		Densa  				 & (2000)    & gelu \\
+		Densa  				 & (3000)    & gelu \\
+		Densa                & (7700)    & gelu \\
+		Salida 				& (28030)    & softmax \\
+		\hline
+	\end{tabular}
+	\caption{Resumen de la arquitectura MCP con salida one-hot 5.}
+	\label{tab:quintaMCPonehot}
+\end{table}
+
+
+
+\noindent\textbf{Resultados finales de la arquitectura 5:} En la Tabla~\ref{tab:quintoResultado} se encuentran los resultados.
+
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{@{}ll@{}}
+		\toprule
+		\textbf{Métrica} & \textbf{Valor} \\ 
+		\midrule
+		Accuracy & 60.00\% \\
+		\bottomrule
+	\end{tabular}
+	\caption{Resultados de la Arquitectura 5}
+	\label{tab:quintoResultado}
+\end{table}
+
+
+\subsection*{Arquitecturas utilizadas para \textit{embeddings}}
+
+\noindent
+En esta sección analizamos las arquitecturas cuya entrada son los \textit{embeddings} obtenidos en el trabajo práctico anterior, mientras que la salida esperada es un \textit{embedding} con la misma dimensión que el correspondiente a la palabra siguiente en la secuencia. Debido a que los valores de los \textit{embeddings} originales presentaban un rango relativamente amplio —con un máximo de 8.02 y un mínimo de -8.16—, se empleó la función de activación \textit{tanh} en la capa de salida, ya que su rango acotado en $[-1, 1]$ respeta la distribución de los datos en sus valores negativos y positivos.
+
+\noindent
+Se probaron diversas estrategias para adaptar el rango de los \textit{embeddings} objetivo. Entre ellas, normalizarlos dividiendo por 1 o por el valor absoluto del máximo, aplicar una transformación lineal para llevarlos explícitamente al intervalo $[-1, 1]$ mediante $x' = (x/\max)|\times 2 - 1|$, y también aplicar directamente la función $\tanh(x)$. Tras varios ensayos, la normalización más estable fue dividir los vectores por el valor absoluto máximo del conjunto, preservando así la estructura relativa de los \textit{embeddings}.
+
+\noindent
+A pesar de estas pruebas, los resultados obtenidos no fueron satisfactorios: la exactitud alcanzada durante el entrenamiento se mantuvo en torno al 70\%, sin mejoras significativas a pesar de ajustar la arquitectura, la función de activación y la tasa de aprendizaje. Esto evidencia que la predicción directa del \textit{embedding} de la palabra siguiente es un problema considerablemente más complejo que la clasificación \textit{one-hot}, ya que requiere aprender una representación continua de alta dimensionalidad.
+
+\noindent
+Para evaluar qué tan similar era el \textit{embedding} generado por la red con respecto al \textit{embedding} real esperado, se empleó la métrica \textit{cosine\_similarity} de \textit{scikit-learn}. Luego se ordena el resultado de mayor a menor y el indice que tiene un valor más alto se asocia con la siguiente palabra.
+
+\noindent
+Se evaluaron distintas arquitecturas de redes neuronales multicapa, así como diferentes valores de la tasa de aprendizaje (\(\eta\)), en algunas casos se pudo guardar el valor de $\eta$, en otros casos solo reporta el valor de la métrica con el mejor $\eta$ que se encontro.
+	
+
+	
+
+
+
+
+%	_________________________________________________________________
+%	Model: "model"
+%%	_________________________________________________________________
+%	Layer (type)                Output Shape              Param #
+%	=================================================================
+
+%	=================================================================
+%	Total params: 17415750 (66.44 MB)
+%	Trainable params: 17415750 (66.44 MB)
+%	Non-trainable params: 0 (0.00 Byte)
+
+
+%MODEL_PATH = r"C:\Users\PIA\Documents\Aprendizaje_Automatico-main\mcp MEJORES\multicapa_emb_model_epoca_55acc.keras"
+%model = load_model(MODEL_PATH)
+%model.summary()
+
+
+
+
+%MODEL_PATH = r"C:\Users\PIA\Documents\Aprendizaje_Automatico-main\mcp MEJORES\multicapa_emb_model_epoca700_70acc.h5"
+%model = load_model(MODEL_PATH)
+%model.summary()
+	
+
+	\noindent\textbf{Arquitectura 6:} En la Tabla~\ref{tab:primeraMCPemb} se encuentra la sexta arquitectura.
+	
+	\begin{table}[H]
+		\centering
+		\ttfamily
+		\begin{tabular}{l l r}
+			\hline
+			\textbf{Capa} & \textbf{Neuronas} & \textbf{Activación} \\
+			\hline
+			Entrada (\textit{embeddings}) & (1300)     & - \\
+			Densa                & (1500)    & gelu \\
+			Densa  				 & (1000)    & gelu \\
+			Densa                & (700)    & gelu \\
+			Densa                & (250)    & gelu \\
+			Salida 				& (28030)    & tanh \\
+			\hline
+		\end{tabular}
+		\caption{Resumen de la arquitectura MCP con salida embedding 1.}
+		\label{tab:primeraMCPemb}
+	\end{table}
+	
+	
+	
+	\noindent\textbf{Resultados finales de la arquitectura 6:} En la Tabla~\ref{tab:sectoResultado} se encuentran los resultados.
+	
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{@{}ll@{}}
+				\toprule
+				\textbf{Métrica} & \textbf{Valor} \\ 
+				\midrule
+				Accuracy & 57.00\% \\
+				\bottomrule
+			\end{tabular}
+			\label{tab:sectoResultado}
+			\caption{Resultados de la Arquitectura 6}
+		\end{center}
+		
+	\end{table}
+	
+	
+
+	
+	\noindent\textbf{Arquitectura 7:} En la Tabla~\ref{tab:segundaMCPemb} se encuentra la séptima arquitectura.
+	
+	\begin{table}[H]
+		\centering
+		\ttfamily
+		\begin{tabular}{l l r}
+			\hline
+			\textbf{Capa} & \textbf{Neuronas} & \textbf{Activación} \\
+			\hline
+			Entrada (\textit{embeddings}) & (1300)     & - \\
+			Densa                & (1500)    & gelu \\
+			Densa  				 & (1100)    & gelu \\
+			Densa                & (800)    & gelu \\
+			Densa                & (600)    & gelu \\
+			Densa                & (400)    & gelu \\
+			Densa                & (200)    & gelu \\
+			Salida & (28030)    & tanh \\
+			\hline
+			\textbf{Valor de $\eta$} & 0.001 & -
+			
+		\end{tabular}
+		\caption{Resumen de la arquitectura MCP con salida embedding 2.}
+		\label{tab:segundaMCPemb}
+	\end{table}
+	
+	
+	
+	\noindent\textbf{Resultados finales de la arquitectura 7:} En la Tabla~\ref{tab:septimoResultado} se encuentran los resultados.
+	
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{@{}ll@{}}
+				\toprule
+				\textbf{Métrica} & \textbf{Valor} \\ 
+				\midrule
+				Accuracy & 62.00\% \\
+				\bottomrule
+			\end{tabular}
+			\caption{Resultados de la Arquitectura 2}
+			\label{tab:septimoResultado}
+			
+		\end{center}
+	\end{table}
+	
+	
+	\noindent\textbf{Arquitectura 8:} En la Tabla~\ref{tab:terceraMCPembb} se encuentra la octava arquitectura.
+	
+	\begin{table}[H]
+		\centering
+		\ttfamily
+		\begin{tabular}{l l r}
+			\hline
+			\textbf{Capa} & \textbf{Neuronas} & \textbf{Activación} \\
+			\hline
+			Entrada (\textit{embeddings}) & (1300)     & - \\
+			Densa                & (1024)    & gelu \\
+			Densa  				 & (512)    & gelu \\
+			Densa                & (512)    & gelu \\
+			Densa                & (300)    & gelu \\
+			Salida & (28030)    & tanh \\
+			\hline
+			\textbf{Valor de $\eta$} & 0.004 
+		\end{tabular}
+		\caption{Resumen de la arquitectura MCP con salida embedding 3.}
+		\label{tab:terceraMCPembb}
+	\end{table}
+	
+	
+	
+	\noindent\textbf{Resultados finales de la arquitectura 8:} En la Tabla~\ref{tab:octavoResultado} se encuentran los resultados.
+	
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{@{}ll@{}}
+				\toprule
+				\textbf{Métrica} & \textbf{Valor} \\ 
+				\midrule
+				Accuracy & 90.00\% \\
+				\bottomrule
+			\end{tabular}
+			\label{tab:octavoResultado}
+			\caption{Resultados de la Arquitectura 3}
+		\end{center}
+	\end{table}
+	
+	
+	
+	\noindent\textbf{Arquitectura 9:} En la Tabla~\ref{tab:cuartaaMCPembb} se encuentra la primera arquitectura.
+	
+
+	
+	\begin{table}[H]
+		\centering
+		\ttfamily
+		\begin{tabular}{l l r}
+			\hline
+			\textbf{Capa} & \textbf{Neuronas} & \textbf{Activación} \\
+			\hline
+			Entrada (\textit{embeddings}) & (1300)     & - \\
+			Densa                & (3000)    & gelu \\
+			Densa  				 & (2500)    & gelu \\
+			Densa  				 & (1500)    & gelu \\
+			Densa                & (1000)    & gelu \\
+			Densa                & (500)    & gelu \\
+			Densa                & (350)    & gelu \\
+			Densa                & (170)    & gelu \\
+			Salida 				& (28030)    & tanh \\
+			\hline
+		\end{tabular}
+		\caption{Resumen de la arquitectura MCP con salida embedding 4.}
+		\label{tab:cuartaaMCPembb}
+	\end{table}
+	
+	
+	
+	\noindent\textbf{Resultados finales de la arquitectura 9:} En la Tabla~\ref{tab:novenoResultado} se encuentran los resultados.
+	
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{@{}ll@{}}
+				\toprule
+				\textbf{Métrica} & \textbf{Valor} \\ 
+				\midrule
+				Accuracy & 70.00\% \\
+				\bottomrule
+			\end{tabular}
+			\caption{Resultados de la Arquitectura 4}
+			\label{tab:novenoResultado}
+		\end{center}
+	\end{table}
+	
+	\subsection*{Resultados del modelo MCP con salida one-hot}
+	
+	\noindent
+	A continuación se presentan ejemplos de generación de texto utilizando el modelo \textit{Multi-Layer Perceptron} entrenado con salida \textit{one-hot}. Este modelo alcanzó una exactitud cercana al 90\% en la tarea de predicción de la siguiente palabra.
+	
+	\paragraph{Ejemplo 1}
+	\begin{itemize}
+		\item \textbf{Prompt:} \texttt{encontraría a la maga? tantas veces me había bastado asomarme}
+		\item \textbf{K = 1,\; Longitud = 50}
+		\item \textbf{Salida generada:} \\
+		\texttt{encontraría a la maga? tantas veces me había bastado asomarme, viniendo por la rue de seine, al arco que da al quai de conti, y apenas la luz de ceniza y olivo que flota sobre el río me dejaba distinguir las formas, ya su silueta delgada se inscribía en el pont des arts , a veces andando de un lado}
+	\end{itemize}
+	
+	\paragraph{Ejemplo 2}
+	\begin{itemize}
+		\item \textbf{Prompt:} \texttt{Esta materia es una gran}
+		\item \textbf{K = 5,\; Longitud = 50}
+		\item \textbf{Salida generada:} \\
+		\texttt{Esta materia es un gran el lugar que lo una mano más gorgoteo, una librería del verso y el plata. la bohardilla de gardel apenas sobre fichero y amortiguada sinfónicos da continuamente. por suerte, amigos contra babs cuando los veía en la bohardilla de una mujer el caravelle, y al matrimonio de que abrirlas lo ponían}
+	\end{itemize}
+	
+	\paragraph{Ejemplo 3}
+	\begin{itemize}
+		\item \textbf{Prompt:} \texttt{a pesar de todo habían podido traer una pequeña cantidad de}
+		\item \textbf{K = 1,\; Longitud = 50}
+		\item \textbf{Salida generada:} \\
+		\texttt{a pesar de todo habían podido traer una pequeña cantidad de agua y algunas provisiones. quizá robadas por el soldado que sonreía sin entrar en detalles. desde luego ya no podía pasar mucho detrás en los conciertos del ataúd para hacer tiempo a poco o lo que me pasa qué hasta. no lo niegues, aparte de manera de decir}
+	\end{itemize}
+	
+	\paragraph{Ejemplo 4}
+	\begin{itemize}
+		\item \textbf{Prompt:} \texttt{fue encontrar a josiane en la galerie colbert y enterarme entre besos}
+		\item \textbf{K = 1,\; Longitud = 50}
+		\item \textbf{Salida generada:} \\
+		\texttt{fue encontrar a josiane en la galerie colbert y enterarme entre besos y brincos de que ya no había laurent , que el final había festejado la sangre y el reflujo con el aire gusto de los ojos que cada vez, poner un huevo bien una tentativa. un buen rato sale en condiciones; cualquiera se la cosa rara. por eso me duele}
+	\end{itemize}
+	
+	
+	\subsection*{Resultados del modelo MCP con salida de \textit{embeddings}}
+	
+	\noindent
+	A continuación se presentan ejemplos de generación de texto obtenidos con el modelo basado en \textit{embeddings}, cuyo objetivo era predecir directamente el vector de \textit{embedding} de la palabra siguiente. Tal como se mencionó previamente, este enfoque alcanzó una exactitud aproximada del 70\%, sensiblemente inferior a la arquitectura con salida \textit{one-hot}. Esto se refleja en la coherencia limitada de las secuencias generadas, donde aparecen repeticiones, pérdida de estructura sintáctica y combinaciones de palabras sin relación semántica clara.
+	
+	\paragraph{Ejemplo 1}
+	\begin{itemize}
+		\item \textbf{Prompt:} \texttt{encontraría a la maga? tantas veces me había bastado asomarme}
+		\item \textbf{K = 1,\; Longitud = 50}
+		\item \textbf{Salida generada:} \\
+		\texttt{encontraría a la maga? tantas veces me había bastado asomarme no estuviera dejaba con que se hierro una su? andando comiendo su olivo agua encuentro? estuviera inscribía abajo tubo encuentro no al encuentro andando agua ella no ya ella de acercarme fritas de un a encuentro? citas viejos apenas pont los estuviera una vidas fritas. nuestras charlando conti}
+	\end{itemize}
+	
+	\paragraph{Ejemplo 2}
+	\begin{itemize}
+		\item \textbf{Prompt:} \texttt{Esta materia es una gran}
+		\item \textbf{K = 5,\; Longitud = 50}
+		\item \textbf{Salida generada:} \\
+		\texttt{Esta materia es una gran como al piel da calle gente, con da dentífrico no como fritas con su olivo convencida yo estuviera asomaría yo yo en tubo? en en a estuviera al distinguir con estaría tan pero un conti bastado nuestras luz. era entrar calle ahora los gente sin agua que}
+	\end{itemize}
+	
+	\paragraph{Ejemplo 3}
+	\begin{itemize}
+		\item \textbf{Prompt:} \texttt{a pesar de todo habían podido traer una pequeña cantidad de}
+		\item \textbf{K = 1,\; Longitud = 50}
+		\item \textbf{Salida generada:} \\
+		\texttt{a pesar de todo habían podido traer una pequeña cantidad de vendedora acercarme viejos translúcida dentífrico no convencida yo silueta fritas ceniza no? ella lo calle no a la gente, se papas es viejos detenida? de que quai? pont aprieta encuentro fritas no no yo encuentro fritas abajo ella pont estuviera. el no sorpresa a la bastado veces?}
+	\end{itemize}
+	
+	\paragraph{Ejemplo 4}
+	\begin{itemize}
+		\item \textbf{Prompt:} \texttt{fue encontrar a josiane en la galerie colbert y enterarme entre besos}
+		\item \textbf{K = 1,\; Longitud = 50}
+		\item \textbf{Salida generada:} \\
+		\texttt{fue encontrar a josiane en la galerie colbert y enterarme entre besos acercarme como vidas tubo ella no fritas dentífrico encuentro no fritas no yo de su las precisas asomarme otro era ya olivo distinguir? de un piel cara su agua estuviera. \\[4pt]
+			y veces seine delgada veces que la? no dejaba seine ella pont por quai? papas andando inscribía fritas}
+	\end{itemize}
+	
+	\noindent
+	Como puede observarse, el modelo basado en \textit{embeddings} tiende a producir secuencias con menor coherencia global y mayor presencia de palabras aisladas o repetidas. Esto confirma la dificultad del enfoque de regresión directa sobre un espacio continuo de alta dimensionalidad, así como la superioridad del enfoque \textit{one-hot} en términos de estabilidad y desempeño.
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+\end{document}
