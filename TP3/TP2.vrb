@@ -1,0 +1,15 @@
+\frametitle{Punto 6 - Implementación 'p' - Obtención del Vocabulario}
+
+		En la implementación 'p' el vocabulario se obtiene usando \texttt{Tokenizer} de Keras:
+		
+		\begin{lstlisting}
+			def create_tokenizer(self, dataset):
+				tokenizer = Tokenizer()
+				tokenizer.fit_on_texts(dataset)
+				return tokenizer
+			
+			# Uso para encoder y decoder
+			enc_tokenizer = self.create_tokenizer(train[:, 0])
+			dec_tokenizer = self.create_tokenizer(train[:, 1])
+		\end{lstlisting}
+		

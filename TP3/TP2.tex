@@ -1,0 +1,421 @@
+\documentclass{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{ragged2e}
+\usepackage[table]{xcolor}
+\usepackage{listings}
+
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing,shapes,arrows.meta,positioning}
+\usepackage{adjustbox}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usefonttheme[onlymath]{serif}
+
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{backcolor}{rgb}{0.95,0.95,0.95}
+\definecolor{verdecelda}{HTML}{B7CBA6}
+\definecolor{rojocelda}{HTML}{FF9999}
+\definecolor{lightgray}{gray}{0.6}
+
+\usetheme{CambridgeUS}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{blocks}[rounded][shadow=true]
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolor},
+	commentstyle=\color{codegray},
+	keywordstyle=\color{blue},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{red},
+	basicstyle=\ttfamily\footnotesize,
+	breaklines=true,
+	captionpos=b,
+	keepspaces=true,
+	numbersep=5pt,
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=2,
+	inputencoding=utf8,
+	extendedchars=true,
+	literate={\\}{{\textbackslash}}1
+}
+
+\lstset{style=mystyle}
+
+\title{Trabajo Práctico 3}
+\author{Cisnero, Seivane, Serafini}
+\date{20 de Octubre de 2025}
+
+\begin{document}
+	
+	\begin{frame}
+		\centering
+		\includegraphics[width=0.25\textwidth]{UNAHUR (2)}
+		\vfill
+		{\huge \textbf{Trabajo Práctico 3}}\\[0.2cm]
+		{\Large Aprendizaje Automático Avanzado}\\
+		\vfill
+		{\large Cisnero Matias, Seivane Nicolás, Serafini Franco}\\
+		{\small 17 de Noviembre de 2025}
+	\end{frame}
+	
+	\section{Objetivo del Trabajo}
+	
+	\begin{frame}{}
+		Este trabajo práctico tiene como objetivo analizar e implementar dos variantes arquitectónicas de Transformadores para traducción automática español-inglés:
+		
+		Implementación P: xxx
+		
+		Implementación A: xxx
+		
+	\end{frame}
+	
+	\begin{frame}{Contexto}
+		
+		Los Transformadores representan un gran avance en el campo del Procesamiento de Lenguaje Natural (PLN). En este contexto los mismos constituyen el estado del arte actual para el aprendizaje de Modelos de Grandes Lenguajes (LLM).
+		
+		Para realizar traducción automática, los Transformadores implementan el modelo de secuencia a secuencia (seq2seq), que es capaz de obtener una secuencia de salida dada una secuencia de entrada, independientemente de la longitud de ambas.
+		Estos sistemas son entradnos a partir de pares de oraciones, una de ellas en el lenguaje fuente y la otra en el lenguaje objetivo.
+		
+	\end{frame}
+	
+	% ==========================================
+	\begin{frame}[fragile]{Arquitectura General}
+		
+		El traductor esta compuesto por dos Transformadores:
+		
+		\begin{itemize}
+			\item Codificador: Procesa la secuencia de entrada y genera representaciones contextuales enriquecidas(prof).
+			\item Decodificador: Genera la secuencia de salida token por token, utilizando la información proporcionada por el Codificador.
+		\end{itemize}
+		
+		Durante el entrenamiento se busca maximizar la probabilidad:
+		\[
+		P(y_1, y_2, \ldots, y_m \mid x_1, x_2, \ldots, x_n)
+		\]
+		donde $x$ es la oración a traducir e $y$ es la oración traducida.
+		
+	\end{frame}
+	
+	% ==========================================
+	\begin{frame}[fragile]{Embeddings y Codificación Posicional}
+		
+		Cada token se representa mediante:
+		
+		\begin{itemize}
+			\item \textbf{Matriz E}: $E \in \mathbb{R}^{|V| \times d}$ donde cada fila contiene la representacion contextual de una palabra.
+			\item \textbf{Codificacion One-Hot}: Se multiplica por E para obtener el embedding correspondiente.
+		\end{itemize}
+		
+		Debido a que la posición de las representaciones contextuales en una entrada aporta información acerca de la relación entre ellas, se le suma a cada token un vector de la misma dimensión $d$, cuyo valor depende de la posición del token en la secuencia de entrada.   
+		La función para obtener dichos vectores es:
+		\[
+		vp(p,j) = 
+		\begin{cases} 
+			\sin\left(\dfrac{p}{10000^{2j/d}}\right) & \text{si } j \text{ es par} \\ 
+			\cos\left(\dfrac{p}{10000^{(2j-1)/d}}\right) & \text{si } j \text{ es impar}
+		\end{cases}
+		\]
+	\end{frame}
+	
+	% ==========================================
+	\begin{frame}[fragile]{Mecanismo de Auto-atencion}
+		
+		Cada token adopta tres roles:
+		
+		\begin{itemize}
+			\item \textbf{Consulta (Query)}: El token es transformado para poder ser comparado con otras palabras de la entrada.
+			\item \textbf{Clave (Key)}: El token es transformado para poder ser comparado con la palabra en foco.
+			\item \textbf{Valor (Value)}: El token es transformado para poder calcular el valor final de la representación de cada palabra. 		
+		\end{itemize}
+		Así, las representaciones de las palabras según sus roles son:
+		\[
+		\begin{aligned}
+			&q_i = x_i W^Q, \\
+			&k_i = x_i W^K, \\ 
+			&v_i = x_i W^V
+		\end{aligned}
+		\]
+	\end{frame}
+	
+	% ==========================================
+	\begin{frame}{Mecanismo de Auto-Atención}
+		
+		\textbf{Calculo de la nueva representación contextual $a_i$}
+		
+		La nueva representación contextual $a_i$ para cada token se calcula como:
+		\[
+		a_i = \sum_{j \leq i} \alpha_{i,j} v_j = \sum_{j \leq i} \text{softmax}\left(\frac{q_i k_j}{\sqrt{d_k}}\right) v_j
+		\]
+		
+		\textbf{Atención Múltiple}
+		
+		Múltiples cabezales permiten al modelo capturar diferentes tipos de relaciones lingüísticas como relaciones sintácticas o semánticas.
+		
+		Cada cabezal $k$ tiene sus propias matrices de pesos:
+		\[
+		Q_k = XW^Q_k, \quad K_k = XW^K_k, \quad V_k = XW^V_k
+		\]
+		
+		Y cada cabezal calcula:
+		\[
+		Y_k = \text{softmax}\left(\frac{Q_k K_k^t}{\sqrt{d_k}}\right)V_k
+		\]
+		
+	\end{frame}
+	
+	% ==========================================
+	\begin{frame}{Mecanismo de Auto-Atencion}
+		
+		\textbf{Concatenación}: 
+		\[
+		A = (Y_1 +' Y_2 +' \ldots +' Y_h)W^O
+		\]
+		
+		donde $Y_k \in \mathbb{R}^{N \times d_v}$ es la salida del cabezal $k$, la concatenación produce una matriz de $N \times hd_v$, y $W^O \in \mathbb{R}^{hd_v \times d}$ deja la salida de dimension $Nxd$.
+		
+	\end{frame}
+	
+	\begin{frame}{Capa de PMC y Normalización}
+		
+		\textbf{Capa de N Perceptrones Multicapa (PMC)}
+		
+		Cada bloque contiene una capa de N PMCs con:
+		
+		\begin{itemize}
+			\item Dimensión $d_{\text{ff}}$.
+			\item Función de activación GELU.
+			\item Los pesos son compartidos entre todos los tokens.
+		\end{itemize}
+		
+		\textbf{Normalizacion por Capa:}
+		
+		\begin{itemize}
+			\item Calcula la media y la desviación sobre los elementos del vector de representación de cada token.
+			\item Aplica la transformacion lineal $\gamma x + \beta$ donde $\gamma$ y $\beta$ son parámetros aprendidos durante el entrenamiento.
+		\end{itemize}
+		
+		\textbf{Conexiones residuales:}
+		
+		\begin{itemize}
+			\item Son conexiones directas entre la entrada de cada capa y su salida correspondiente.
+			\item Se aplican tanto a la capa de Auto-Atencion como a la de PMC.
+		\end{itemize}
+		
+	\end{frame}
+	
+	% ===============================================
+		\begin{frame}[fragile]{Punto 2 - Conjunto de Datos Utilizados}
+		
+		\begin{block}{\textit{Common Crawl}}
+			Es una organización sin fines de lucro que rastrea la web y ofrece un repositorio masivo y gratuito de datos de rastreo web para investigadores, empresas y público en general. Estos datos, que incluyen petabytes de páginas web, se almacenan en Amazon Web Services (AWS) y se actualizan periódicamente. 
+		\end{block}
+		
+		\begin{alertblock}{¡¡Problema!!}
+Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
+		\end{alertblock}
+	
+		\textbf{¿La solución?}
+		Hay varias bases de datos con estos HTML´s depurados, que luego pueden ser utilizados como \emph{tokens} para diferentes modelos de lenguajes.
+	\end{frame}
+	
+		\begin{frame}[fragile]{Punto 2 - Conjunto de Datos Utilizados (`a')}
+		
+		\begin{block}{Conjunto Original}
+			Es una organización sin fines de lucro que rastrea la web y ofrece un repositorio masivo y gratuito de datos de rastreo web para investigadores, empresas y público en general. Estos datos, que incluyen petabytes de páginas web, se almacenan en Amazon Web Services (AWS) y se actualizan periódicamente. 
+		\end{block}
+		
+		\begin{alertblock}{¡¡Problema!!}
+			Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
+		\end{alertblock}
+		
+		\textbf{¿La solución?}
+		Hay varias bases de datos con estos HTML´s depurados, que luego pueden ser utilizados como \emph{tokens} para diferentes modelos de lenguajes.
+	\end{frame}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	% ==========================================
+	\begin{frame}[fragile]{Punto 4 - Implementación 'a'}
+		
+		En la implementacion 'a' el modelo de guarda usando la funcion model.save() de Keras, la cual almacena la arquitectura completa del modelo, junto con los pesos entrenados.
+		Esto se realiza en el archivo a10.py con la siguiente linea de codigo:
+		
+		\begin{lstlisting}
+			model.save("eng-fra-transformer.keras")
+		\end{lstlisting}
+		
+		Para cargar el modelo utiliza:
+		
+		\begin{lstlisting}
+			with tf.keras.utils.custom_object_scope(custom_objects):
+				model = tf.keras.models.load_model("eng-fra-transformer.keras")
+		\end{lstlisting}
+		
+	\end{frame}
+	
+	% ==========================================
+	\begin{frame}[fragile]{Punto 4 - Implementación p}
+		
+		En la implementación p el modelo se almacena de forma modular.
+	
+		En el archivo p9.py se genera el archivo ing-esp.pkl, que contiene:
+		
+		\begin{itemize}
+			\item Las oraciones limpias en inglés.
+			\item Las oraciones limpias en español.
+		\end{itemize}
+		
+		El tokenizador se guarda en el archivo p10.py mediante:
+		
+		\begin{lstlisting}
+			self.save_tokenizer(enc_tokenizer, 'enc')
+			self.save_tokenizer(dec_tokenizer, 'dec')
+		\end{lstlisting}
+		
+		Lo cual produce los archivos:
+		
+		\begin{itemize}
+			\item \texttt{enc\_tokenizer.pkl}
+			\item \texttt{dec\_tokenizer.pkl}
+		\end{itemize}
+		
+	\end{frame}
+
+	
+	% ==========================================
+	\begin{frame}[fragile]{Punto 4 - Implementación p}
+		
+		\textbf{Pesos del modelo}
+		
+		La implementación \textbf{p} guarda los parámetros mediante TensorFlow Checkpoints,
+		como se ve en el archivo p11.py:
+		
+		\begin{lstlisting}
+			ckpt = train.Checkpoint(model=training_model, optimizer=optimizador)
+			ckpt_manager = train.CheckpointManager(ckpt, "./checkpoints", max_to_keep=3)
+		\end{lstlisting}
+		
+		Durante el entrenamiento, después de cada época se almacena:
+		
+		\begin{lstlisting}
+			save_path = ckpt_manager.save()
+		\end{lstlisting}
+		
+		Se guardan:
+		
+		\begin{itemize}
+			\item Los pesos del codificador.
+			\item Los pesos del decodificador.
+			\item El estado del optimizador Adam.
+		\end{itemize}
+		
+		\textbf{Para restaurar} un entrenamiento previo se utiliza:
+		
+		\begin{lstlisting}
+			ckpt.restore(ckpt_manager.latest_checkpoint)
+		\end{lstlisting}
+		
+	\end{frame}
+
+	
+	% ==========================================
+	\begin{frame}[fragile]{Punto 5 - Implementación 'a'}
+		
+		En la implementación \textbf{'a'} el mecanismo de \textbf{multi-auto-atención} se implementa usando tf.keras.layers.MultiheadAttention de TensorFlow:
+		
+		\begin{lstlisting}
+			def self_attention(input_shape, prefix="att", mask=False, **kwargs):
+				inputs = tf.keras.layers.Input(shape=input_shape, dtype='float32',
+												name=f"{prefix}_in1")
+				attention = tf.keras.layers.MultiHeadAttention(name=f"{prefix}_attn1", **kwargs)
+				# ... 
+		\end{lstlisting}
+		
+		\begin{lstlisting}
+			def cross_attention(input_shape, context_shape, prefix="att", **kwargs):
+				context = tf.keras.layers.Input(shape=context_shape, dtype='float32',
+												name=f"{prefix}_ctx2")
+				inputs = tf.keras.layers.Input(shape=input_shape, dtype='float32',
+												name=f"{prefix}_in2")
+			attention = tf.keras.layers.MultiHeadAttention(name=f"{prefix}_attn2", **kwargs)
+			# ... 
+		\end{lstlisting}
+		
+	\end{frame}
+	
+	\begin{frame}[fragile]{Punto 5 - Implementacion 'p'}
+		
+		En la implementación 'p' la capa de multi-auto-atención se implementa manualmente:
+	
+		\begin{lstlisting}
+			class MultiAutoAtencion(Layer):
+			def __init__(self, cabezales, d_k, d_v, d, **kwargs):
+			self.atencion = AutoAtencion()  
+			self.cabezales = cabezales
+			self.d_k = d_k 
+			self.d_v = d_v 
+			self.d = d
+			self.W_q = Dense(d)
+			self.W_k = Dense(d)
+			self.W_v = Dense(d)
+			self.W_o = Dense(d)
+		\end{lstlisting}
+		
+	\end{frame}
+	
+	\begin{frame}[fragile]{Punto 6 - Implementación 'a' - Obtención del Vocabulario}
+	
+		En la implementación 'a' el vocabulario se obtiene usando \texttt{TextVectorization} de Keras:
+	
+		\begin{lstlisting}
+			eng_vectorizer = TextVectorization(
+				max_tokens=vocab_size_en,
+				output_mode="int",
+				output_sequence_length=seq_length,
+			)
+			
+			# Adaptacion con datos de entrenamiento
+			train_eng_texts = [pair[0] for pair in train_pairs]
+			eng_vectorizer.adapt(train_eng_texts)
+		\end{lstlisting}
+		
+		Proceso:
+		\begin{itemize}
+			\item Se crea una capa \texttt{TextVectorization} con tamaño máximo de vocabulario
+			\item La capa automáticamente construye el vocabulario
+			\item Se guarda junto con el modelo en el archivo \texttt{vectorize.pickle}
+		\end{itemize}
+	
+	\end{frame}
+	
+	% ==========================================
+	\begin{frame}[fragile]{Punto 6 - Implementación 'p' - Obtención del Vocabulario}
+	
+		En la implementación 'p' el vocabulario se obtiene usando \texttt{Tokenizer} de Keras:
+		
+		\begin{lstlisting}
+			def create_tokenizer(self, dataset):
+				tokenizer = Tokenizer()
+				tokenizer.fit_on_texts(dataset)
+				return tokenizer
+			
+			# Uso para encoder y decoder
+			enc_tokenizer = self.create_tokenizer(train[:, 0])
+			dec_tokenizer = self.create_tokenizer(train[:, 1])
+		\end{lstlisting}
+		
+	\end{frame}
+	
+\end{document}
