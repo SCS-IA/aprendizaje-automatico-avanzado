@@ -224,47 +224,272 @@ Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
 		Hay varias bases de datos con estos HTML´s depurados, que luego pueden ser utilizados como \emph{tokens} para diferentes modelos de lenguajes.
 	\end{frame}
 	
-		\begin{frame}[fragile]{Punto 2 - Conjunto de Datos Utilizados (`a')}
-		
-		\begin{block}{Conjunto Original}
-			Es una organización sin fines de lucro que rastrea la web y ofrece un repositorio masivo y gratuito de datos de rastreo web para investigadores, empresas y público en general. Estos datos, que incluyen petabytes de páginas web, se almacenan en Amazon Web Services (AWS) y se actualizan periódicamente. 
-		\end{block}
-		
-		\begin{alertblock}{¡¡Problema!!}
-			Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
-		\end{alertblock}
-		
-		\textbf{¿La solución?}
-		Hay varias bases de datos con estos HTML´s depurados, que luego pueden ser utilizados como \emph{tokens} para diferentes modelos de lenguajes.
-	\end{frame}
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	% ==========================================
-	\begin{frame}[fragile]{Punto 4 - Implementación 'a'}
-		
-		En la implementacion 'a' el modelo de guarda usando la funcion model.save() de Keras, la cual almacena la arquitectura completa del modelo, junto con los pesos entrenados.
-		Esto se realiza en el archivo a10.py con la siguiente linea de codigo:
-		
-		\begin{lstlisting}
-			model.save("eng-fra-transformer.keras")
-		\end{lstlisting}
-		
-		Para cargar el modelo utiliza:
-		
-		\begin{lstlisting}
-			with tf.keras.utils.custom_object_scope(custom_objects):
-				model = tf.keras.models.load_model("eng-fra-transformer.keras")
-		\end{lstlisting}
-		
-	\end{frame}
+\begin{frame}{Normalización del Corpus (`a')}
+	\begin{alertblock}{Archivo .txt}
+		Se lee el archivo \texttt{.txt} con pares de oraciones separados por tabulador.
+	\end{alertblock}
 	
+	\begin{block}{Normalización}
+			\begin{itemize}
+			\item Conversión a minúsculas y normalización Unicode (\texttt{NFKC}).
+	\item Inserción adecuada de espacios alrededor de signos de puntuación mediante expresiones regulares.
+	\item Separación en inglés y español usando el carácter \texttt{\textbackslash t}.
+			\end{itemize}
+	\end{block}
+	
+		\begin{block}{Las oraciones en ingles se marcan con tokens especiales:}
+			\texttt{[start]} al inicio y \texttt{[end]} al final.
+		\end{block}
+		Se generan los pares normalizados \texttt{(esp, eng)} y se guardan en \texttt{text\_pairs.pickle}.
+\end{frame}
+	
+	
+	
+\begin{frame}{Vectorización e Importancia de \texttt{pickle}(`a')}
+	
+\begin{alertblock}{Vectorización}
+\begin{itemize}
+	\item Se divide el corpus en \textbf{train / validación / test}.
+	\item Se crean dos capas \texttt{TextVectorization} y se adaptan con el conjunto de entrenamiento.
+	\item Los vectorizadores entrenados y los pares de datos se guardan con \texttt{pickle}.
+\end{itemize}
+		\end{alertblock}
+
+\begin{block}{¿Por qué es importante \texttt{pickle}?}
+\begin{itemize}
+	\item Permite guardar objetos complejos de Python (\texttt{TextVectorization}, vocabularios, listas, diccionarios).
+	\item Evita recalcular o readaptar los vectorizadores: se mantienen \textbf{exactamente los mismos tokens y el mismo índice de cada palabra}.
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+
+\begin{frame}{Limpieza y Preparación del Corpus (`p')}
+		\begin{alertblock}{Archivo .txt}
+Se carga el archivo \texttt{.txt} y se separa en pares \texttt{(inglés, español)} usando el tabulador.
+	\end{alertblock}
+	
+		\begin{block}{Normalización}
+		\begin{itemize}
+\item Normalización Unicode (\texttt{NFD}) y eliminación de caracteres no ASCII.
+\item Conversión a minúsculas y Remoción de puntuación mediante tabla de traducción.
+\item Eliminación de tokens con números y caracteres no imprimibles.
+\item Reconstrucción de la oración limpia como string.
+		\end{itemize}
+	\end{block}
+	El resultado final se almacena como matriz NumPy y se guarda en \texttt{ing-esp.pkl}.
+		
+		\begin{block}{Se agrega marcado con tokens especiales}
+		\begin{itemize}
+	\item \texttt{<SOS>} al inicio y \texttt{<EOS>} al final.
+\end{itemize}
+		\end{block}
+
+\end{frame}
+
+\begin{frame}{Tokenización y Dataset (`p')}
+	\begin{alertblock}{Se utilizan la clase \texttt{PrepareDataset} y \texttt{Tokenizer} de Keras para:}
+		\begin{itemize}
+	\item Ajustar un tokenizador para el encoder (oraciones fuente).
+	\item Ajustar otro tokenizador para el decoder (oraciones objetivo).
+	\item Calcular longitudes máximas y tamaños de vocabulario.
+	\item Convertir texto a secuencias enteras y aplicar \texttt{padding}.
+\end{itemize}
+	\end{alertblock}
+	\begin{itemize}
+		\item Se generan:
+		\begin{itemize}
+			\item \texttt{trainX}: oraciones fuente codificadas.
+			\item \texttt{trainY}: oraciones destino codificadas.
+			\item \texttt{train\_dataset}: batches de entrenamiento con \texttt{tf.data.Dataset}.
+		\end{itemize}
+
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}{Funciones de Keras utilizadas (Implementación a)}
+\begin{block}{TextVectorization}
+			\begin{itemize}
+		\item Tokeniza, normaliza y convierte texto en secuencias de enteros.
+		\item Aprende el vocabulario mediante \texttt{adapt()}.
+		\item Permite definir:
+		\begin{itemize}
+			\item tamaño del vocabulario,
+			\item longitud máxima de secuencia,
+			\item modo de salida (entero, multi-hot, TF-IDF).
+		\end{itemize}
+		\item Se usa para construir:
+		\begin{itemize}
+			\item \texttt{encoder\_inputs} (español),
+			\item \texttt{decoder\_inputs} y \texttt{targets} (inglés).
+		\end{itemize}
+	\end{itemize}
+\end{block}
+
+\begin{alertblock}{tf.data.Dataset}
+		\begin{itemize}
+	\item Construye el pipeline eficiente de entrenamiento.
+	\item Permite \texttt{batch}, \texttt{shuffle}, \texttt{prefetch} y \texttt{cache}.
+\end{itemize}
+
+		\end{alertblock}
+\textbf{No generan embeddings}; sólo producen secuencias de índices.
+
+\end{frame}
+
+\begin{frame}{Funciones de Keras utilizadas (Implementación p)}
+	
+	\begin{block}{Tokenizer()}
+\begin{itemize}
+	\item Construye un vocabulario a partir del texto.
+	\item Convierte cada palabra en un entero único.
+	\item No normaliza automáticamente: se usa texto ya limpiado.
+	\item Se guardan dos tokenizadores:
+	\begin{itemize}
+		\item uno para el encoder,
+		\item otro para el decoder.
+	\end{itemize}
+\end{itemize}
+	\end{block}
+	
+	\begin{block}{\textbf{texts\_to\_sequences()}}
+		\begin{itemize}
+	\item Transforma cada oración en una lista de índices enteros.
+	\item Si una palabra no está en el vocabulario → índice \texttt{OOV}.
+\end{itemize}
+	\end{block}
+
+\end{frame}
+
+
+
+\begin{frame}{Funciones de Keras utilizadas (Implementación p)}
+	
+	\begin{block}{\textbf{pad\_sequences()}}
+		\begin{itemize}
+			\item Ajusta todas las oraciones a una longitud fija.
+			\item Agrega ceros al final (\texttt{padding='post'}).
+		\end{itemize}
+	\end{block}
+	
+	\begin{block}{\textbf{tf.data.Dataset}}
+		\begin{itemize}
+			\item Crea un dataset por lotes para entrenamiento del transformer.
+		\end{itemize}
+	\end{block}
+	\textbf{No se generan embeddings}. Sólo secuencias de índices.
+\end{frame}
+
+
+\begin{frame}{Comparación entre TextVectorization y Tokenizer}
+	\begin{block}{TextVectorization}
+		\begin{itemize}
+	\item Incluye normalización integrada.
+	\item Se adapta con \texttt{adapt()}.
+	\item Permite modos de salida alternativos (TF-IDF, multi-hot).
+\end{itemize}
+	\end{block}
+	
+		\begin{block}{Tokenizer()}
+		\begin{itemize}
+	\item No normaliza: requiere limpieza manual previa.
+	\item Muy usado en implementaciones clásicas de seq2seq.
+	\item Permite guardar tokenizadores fácilmente con \texttt{pickle}.
+\end{itemize}
+			\end{block}
+				
+\textbf{Ambas} producen secuencias enteras para alimentar una capa \texttt{Embedding}.
+
+\end{frame}
+
+\begin{frame}{Embeddings en Transformers (Implementación Real)}
+	\begin{block}{¿Qué hace la capa \texttt{Embedding}?}
+		\begin{itemize}
+			\item Convierte cada token entero en un vector d-dimensional.
+			\item Los vectores se inicializan aleatoriamente.
+			\item Son \textbf{parametrizables}: se ajustan durante el entrenamiento.
+			\item Representan relaciones semánticas aprendidas por gradiente.
+		\end{itemize}
+	\end{block}
+	
+	\begin{block}{Diferencia con CBOW / Skip-gram}
+		\begin{itemize}
+			\item CBOW/Skip-gram aprenden embeddings usando contextos.
+			\item Los vectores representan co-ocurrencia de palabras reales.
+			\item Son embeddings \textbf{preentrenados} basados en corpus grandes.
+			\item La capa \texttt{Embedding} del Transformer:
+			\begin{itemize}
+				\item NO usa contextos para aprender.
+				\item Aprende tareas específicas (p. ej. traducción).
+				\item Se entrena \textbf{junto con todo el modelo}.
+			\end{itemize}
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+\begin{frame}{Embedding Posicional Entrenable vs. Fijo}
+	\begin{block}{Embedding Posicional Entrenable (Implementación a)}
+		\begin{itemize}
+			\item Se usa \texttt{tf.keras.layers.Embedding}.
+			\item Inicializa vectores para cada posición.
+			\item Los valores son parte del entrenamiento.
+			\item Se suman vector a vector con los token embeddings.
+			\item Modelo aprende relaciones posicionales óptimas.
+		\end{itemize}
+	\end{block}
+	
+	\begin{block}{Embedding Posicional Fijo (Implementación p)}
+		\begin{itemize}
+			\item Usa matriz sinusoidal (\textbf{no entrenable}).
+			\item Valores calculados: $\sin(k / n^{2i/d})$ y $\cos(k / n^{2i/d})$.
+			\item Se suma a los token embeddings fijos.
+			\item No se modifica durante entrenamiento.
+			\item Permite al modelo razonar sobre distancias absolutas y relativas.
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+\begin{frame}{Implementación a: PositionalEmbedding (Entrenable)}
+	\begin{block}{¿Qué hace esta implementación?}
+		\begin{itemize}
+			\item Crea embeddings de palabras \textbf{entrenables}.
+			\item Crea embeddings posicionales fijos generados por seno y coseno.
+			\item El método \texttt{call()}:
+			\begin{itemize}
+				\item Convierte tokens en vectores densos.
+				\item Suma vectores posicionales precomputados.
+			\end{itemize}
+			\item Todos los embeddings de palabras se ajustan con gradiente.
+		\end{itemize}
+	\end{block}
+	
+\end{frame}
+
+\begin{frame}{Implementación p: PositionEmbeddingFixedWeights (No Entrenable)}
+	\begin{block}{¿Qué hace esta implementación?}
+		\begin{itemize}
+			\item Genera \textbf{embeddings de palabras} mediante sinusoidales.
+			\item Usa \texttt{Embedding(..., trainable=False)}.
+			\item Genera embeddings posicionales también fijos.
+		\end{itemize}
+	\end{block}
+	
+	\begin{block}{Limitaciones}
+		\begin{itemize}
+			\item Embeddings de palabras NO representan semántica real.
+			\item No aprenden durante entrenamiento.
+			\item No se parecen a CBOW/Skip-gram ni a embeddings reales.
+		\end{itemize}
+	\end{block}
+\end{frame}
 	% ==========================================
 	\begin{frame}[fragile]{Punto 4 - Implementación p}
 		
