@@ -1,2 +1,10 @@
 \babel@toc {spanish}{}\relax 
-\beamer@sectionintoc {1}{Objetivo del Trabajo}{2}{0}{1}
+\beamer@sectionintoc {1}{1. Implementación del Transformador}{2}{0}{1}
+\beamer@sectionintoc {2}{2. Conjunto de Datos}{13}{0}{2}
+\beamer@sectionintoc {3}{3. Implementación Base (a)}{14}{0}{3}
+\beamer@sectionintoc {4}{4. Almacenamiento de Parámetros}{16}{0}{4}
+\beamer@sectionintoc {5}{5. Implementación de Multi-Auto-Atención}{20}{0}{5}
+\beamer@sectionintoc {6}{6. Obtención del Vocabulario}{23}{0}{6}
+\beamer@sectionintoc {7}{7. Obtención de Embeddings}{31}{0}{7}
+\beamer@sectionintoc {8}{8. Implementación del Modelo}{36}{0}{8}
+\beamer@sectionintoc {9}{9. Reporte de Resultados}{44}{0}{9}

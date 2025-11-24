@@ -7,6 +7,7 @@
 \usepackage{ragged2e}
 \usepackage[table]{xcolor}
 \usepackage{listings}
+\usepackage{tabularx}
 
 \usepackage{tikz}
 \usetikzlibrary{decorations.pathreplacing,shapes,arrows.meta,positioning}
@@ -20,17 +21,20 @@
 \definecolor{verdecelda}{HTML}{B7CBA6}
 \definecolor{rojocelda}{HTML}{FF9999}
 \definecolor{lightgray}{gray}{0.6}
+\definecolor{vscYellow}{HTML}{f1d200}
+\definecolor{coderule}{HTML}{d19191}
 
 \usetheme{CambridgeUS}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{blocks}[rounded][shadow=true]
+\setbeamercolor{structure}{fg=red}
 
 \lstdefinestyle{mystyle}{
 	backgroundcolor=\color{backcolor},
 	commentstyle=\color{codegray},
 	keywordstyle=\color{blue},
 	numberstyle=\tiny\color{codegray},
-	stringstyle=\color{red},
+	stringstyle=\color{orange},
 	basicstyle=\ttfamily\footnotesize,
 	breaklines=true,
 	captionpos=b,
@@ -42,14 +46,30 @@
 	tabsize=2,
 	inputencoding=utf8,
 	extendedchars=true,
-	literate={\\}{{\textbackslash}}1
+	literate={\\}{{\textbackslash}}1 {π}{{$\pi$}}1 {θ}{{$\theta$}}1 {μ}{{$\mu$}}1 {β}{{$\beta$}}1 {η}{{$\eta$}}1 {δ}{{$\delta$}}1 {Δ}{{$\Delta$}}1 {ϵ}{{$\epsilon$}}1
+	{á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+	{Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+	{ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ζ}{{$\zeta$}}1 {_}{{\_}}1
 }
 
 \lstset{style=mystyle}
 
+\lstset{
+	language=Python,
+	% Morado
+	emph={translate, normalize, format_dataset, make_dataset, compute_mask, get_config, pos_enc_matrix, __init__, self_attention, cross_attention, feed_forward, encoder, decoder, transformer, __call__, call, main, CambiarDimensionesTensor, MascaraRelleno, MascaraCausal, LeerArchivo, ObtenerPares, LimpiarPares, GuardarArchivo, find_seq_length, find_vocab_size, encode_pad, save_tokenizer, load_tokenizer, loss_fcn, accuracy_fcn, train_step}, emphstyle=\color{purple}\bfseries,
+	% Verde agua
+	emph={[2]PositionalEmbedding, MultiAutoAtencion, PositionEmbeddingFixedWeights, EmbeddingPosicionales, AutoAtencion, Normalizacion, PMC, CapaCodificador, Codificador, CapaDecodificador, Decodificador, Transformador, Model, PrepareDataset, Translate, LRScheduler, LearningRateSchedule, CustomSchedule, Dense, TextVectorization, Input, LayerNormalization, MultiHeadAttention, Add, Dropout},
+	emphstyle={[2]\color{teal}\bfseries},
+	% Azul (igual color de if, else, def)
+	emph={[3]with},
+	emphstyle={[4]\color{blue}\bfseries},
+}
+
+
 \title{Trabajo Práctico 3}
 \author{Cisnero, Seivane, Serafini}
-\date{20 de Octubre de 2025}
+\date{17 de Noviembre de 2025}
 
 \begin{document}
 	
@@ -64,34 +84,86 @@
 		{\small 17 de Noviembre de 2025}
 	\end{frame}
 	
-	\section{Objetivo del Trabajo}
+	\section{1. Implementación del Transformador}
 	
-	\begin{frame}{}
-		Este trabajo práctico tiene como objetivo analizar e implementar dos variantes arquitectónicas de Transformadores para traducción automática español-inglés:
+	\begin{frame}[plain]
+		\begin{center}
+			\textbf{Consigna 1:}
+		\end{center}
+		\justifying
+		Implemente un Transformador en Python, usando la librería Keras (tensorflow), con el propósito de obtener un traductor. 
+	\end{frame}
+	
+	\begin{frame}{Objetivo del trabajo práctico}
+		\justifying
 		
-		Implementación P: xxx
+		\begin{block}{Propósito general}
+			Este trabajo práctico tiene como objetivo analizar e implementar dos variantes arquitectónicas de \textbf{Transformadores} para traducción automática español–inglés.
+		\end{block}
 		
-		Implementación A: xxx
+		\vspace{0.3cm}
+		
+		\begin{block}{Implementaciones}
+			\begin{itemize}
+				\item \textbf{Implementación P}: xxx
+				\item \textbf{Implementación A}: xxx
+			\end{itemize}
+		\end{block}
 		
 	\end{frame}
 	
 	\begin{frame}{Contexto}
+		\justifying
 		
-		Los Transformadores representan un gran avance en el campo del Procesamiento de Lenguaje Natural (PLN). En este contexto los mismos constituyen el estado del arte actual para el aprendizaje de Modelos de Grandes Lenguajes (LLM).
+		\begin{block}{Transformadores y su importancia}
+			Los \textbf{Transformadores} representan un gran avance en el campo del Procesamiento del Lenguaje Natural (PLN). 
+			Actualmente constituyen el estado del arte en el aprendizaje de \textbf{Modelos de Grandes Lenguajes} (LLM).
+		\end{block}
 		
-		Para realizar traducción automática, los Transformadores implementan el modelo de secuencia a secuencia (seq2seq), que es capaz de obtener una secuencia de salida dada una secuencia de entrada, independientemente de la longitud de ambas.
-		Estos sistemas son entradnos a partir de pares de oraciones, una de ellas en el lenguaje fuente y la otra en el lenguaje objetivo.
+		\begin{block}{Arquitectura seq2seq}
+			Para realizar traducción automática, los Transformadores implementan el modelo de \textbf{secuencia a secuencia} (seq2seq), 
+			capaz de generar una secuencia de salida dada una secuencia de entrada, independientemente de la \textbf{longitud} de ambas.
+		\end{block}
 		
 	\end{frame}
 	
-	% ==========================================
-	\begin{frame}[fragile]{Arquitectura General}
+	\begin{frame}{Entrenamiento}
+		\justifying
 		
+		\begin{block}{Pares de entrenamiento}
+			Los sistemas son entrenados a partir de pares de oraciones:
+			una en el lenguaje fuente y otra en el lenguaje objetivo.
+		\end{block}
+		
+		\vspace{0.5cm}
+		En nuestro caso
+		
+		\begin{center}
+			\Large
+			\begin{tabular}{ccc}
+				\textbf{Inglés} & \Large$\rightarrow$ & \textbf{Español} \\
+				\\[-1cm]
+				\textcolor{red}{
+					$\underbrace{\hspace{2cm}}_{\text{lenguaje fuente}}$
+				}
+				&
+				\hspace{0.5cm}
+				&
+				\textcolor{red}{
+					$\underbrace{\hspace{2cm}}_{\text{lenguaje objetivo}}$
+				} \\
+			\end{tabular}
+		\end{center}
+		
+	\end{frame}
+	
+	\begin{frame}[fragile]{Arquitectura General}
+		\justifying
 		El traductor esta compuesto por dos Transformadores:
 		
 		\begin{itemize}
-			\item Codificador: Procesa la secuencia de entrada y genera representaciones contextuales enriquecidas(prof).
-			\item Decodificador: Genera la secuencia de salida token por token, utilizando la información proporcionada por el Codificador.
+			\item \textbf{Codificador:} Procesa la secuencia de entrada y genera representaciones contextuales enriquecidas(prof).
+			\item \textbf{Decodificador:} Genera la secuencia de salida token por token, utilizando la información proporcionada por el Codificador.
 		\end{itemize}
 		
 		Durante el entrenamiento se busca maximizar la probabilidad:
@@ -102,9 +174,23 @@
 		
 	\end{frame}
 	
-	% ==========================================
-	\begin{frame}[fragile]{Embeddings y Codificación Posicional}
+	\begin{frame}{Arquitectura (Diagrama)}
+		\justifying
+		\textbf{Diagrama general de un Transformador para traducir}
 		
+		\vspace{0.35cm}
+		
+		\begin{center}
+			\includegraphics[width=0.6\linewidth]{transformer-traductor}
+		\end{center}
+		
+		\small
+		A la izquierda se observa el \textbf{Codificador (Encoder)} y a la derecha el \textbf{Decodificador (Decoder)}.
+		
+	\end{frame}
+	
+	\begin{frame}[fragile]{Embeddings y Codificación Posicional}
+		\justifying
 		Cada token se representa mediante:
 		
 		\begin{itemize}
@@ -123,9 +209,8 @@
 		\]
 	\end{frame}
 	
-	% ==========================================
 	\begin{frame}[fragile]{Mecanismo de Auto-atencion}
-		
+		\justifying
 		Cada token adopta tres roles:
 		
 		\begin{itemize}
@@ -143,9 +228,8 @@
 		\]
 	\end{frame}
 	
-	% ==========================================
 	\begin{frame}{Mecanismo de Auto-Atención}
-		
+		\justifying
 		\textbf{Calculo de la nueva representación contextual $a_i$}
 		
 		La nueva representación contextual $a_i$ para cada token se calcula como:
@@ -169,9 +253,8 @@
 		
 	\end{frame}
 	
-	% ==========================================
 	\begin{frame}{Mecanismo de Auto-Atencion}
-		
+		\justifying
 		\textbf{Concatenación}: 
 		\[
 		A = (Y_1 +' Y_2 +' \ldots +' Y_h)W^O
@@ -182,7 +265,7 @@
 	\end{frame}
 	
 	\begin{frame}{Capa de PMC y Normalización}
-		
+		\justifying
 		\textbf{Capa de N Perceptrones Multicapa (PMC)}
 		
 		Cada bloque contiene una capa de N PMCs con:
@@ -209,300 +292,82 @@
 		
 	\end{frame}
 	
+	\section{2. Conjunto de Datos}
+	
 	% ===============================================
-		\begin{frame}[fragile]{Punto 2 - Conjunto de Datos Utilizados}
+	\begin{frame}[plain]{Punto 2 - Conjunto de Datos Utilizados}
 		
 		\begin{block}{\textit{Common Crawl}}
 			Es una organización sin fines de lucro que rastrea la web y ofrece un repositorio masivo y gratuito de datos de rastreo web para investigadores, empresas y público en general. Estos datos, que incluyen petabytes de páginas web, se almacenan en Amazon Web Services (AWS) y se actualizan periódicamente. 
 		\end{block}
 		
 		\begin{alertblock}{¡¡Problema!!}
-Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
+			Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
 		\end{alertblock}
-	
+		
 		\textbf{¿La solución?}
 		Hay varias bases de datos con estos HTML´s depurados, que luego pueden ser utilizados como \emph{tokens} para diferentes modelos de lenguajes.
 	\end{frame}
 	
-
+	
 	% ==========================================
-\begin{frame}{Normalización del Corpus (`a')}
-	\begin{alertblock}{Archivo .txt}
-		Se lee el archivo \texttt{.txt} con pares de oraciones separados por tabulador.
-	\end{alertblock}
 	
-	\begin{block}{Normalización}
-			\begin{itemize}
-			\item Conversión a minúsculas y normalización Unicode (\texttt{NFKC}).
-	\item Inserción adecuada de espacios alrededor de signos de puntuación mediante expresiones regulares.
-	\item Separación en inglés y español usando el carácter \texttt{\textbackslash t}.
-			\end{itemize}
-	\end{block}
+	\section{3. Implementación Base (a)}
 	
-		\begin{block}{Las oraciones en ingles se marcan con tokens especiales:}
-			\texttt{[start]} al inicio y \texttt{[end]} al final.
-		\end{block}
-		Se generan los pares normalizados \texttt{(esp, eng)} y se guardan en \texttt{text\_pairs.pickle}.
-\end{frame}
+	\begin{frame}[plain]
+		\begin{center}
+			\textbf{Consigna 3:}
+		\end{center}
+		\justifying
+		Utilice la implementación base ’a’ de las dos suministradas: la ’a’ y la ’p’. 
+	\end{frame}
 	
-	
-	
-\begin{frame}{Vectorización e Importancia de \texttt{pickle}(`a')}
-	
-\begin{alertblock}{Vectorización}
-\begin{itemize}
-	\item Se divide el corpus en \textbf{train / validación / test}.
-	\item Se crean dos capas \texttt{TextVectorization} y se adaptan con el conjunto de entrenamiento.
-	\item Los vectorizadores entrenados y los pares de datos se guardan con \texttt{pickle}.
-\end{itemize}
-		\end{alertblock}
-
-\begin{block}{¿Por qué es importante \texttt{pickle}?}
-\begin{itemize}
-	\item Permite guardar objetos complejos de Python (\texttt{TextVectorization}, vocabularios, listas, diccionarios).
-	\item Evita recalcular o readaptar los vectorizadores: se mantienen \textbf{exactamente los mismos tokens y el mismo índice de cada palabra}.
-\end{itemize}
-\end{block}
-
-\end{frame}
-
-
-\begin{frame}{Limpieza y Preparación del Corpus (`p')}
-		\begin{alertblock}{Archivo .txt}
-Se carga el archivo \texttt{.txt} y se separa en pares \texttt{(inglés, español)} usando el tabulador.
-	\end{alertblock}
-	
-		\begin{block}{Normalización}
-		\begin{itemize}
-\item Normalización Unicode (\texttt{NFD}) y eliminación de caracteres no ASCII.
-\item Conversión a minúsculas y Remoción de puntuación mediante tabla de traducción.
-\item Eliminación de tokens con números y caracteres no imprimibles.
-\item Reconstrucción de la oración limpia como string.
-		\end{itemize}
-	\end{block}
-	El resultado final se almacena como matriz NumPy y se guarda en \texttt{ing-esp.pkl}.
+	\begin{frame}
+		\justifying
 		
-		\begin{block}{Se agrega marcado con tokens especiales}
-		\begin{itemize}
-	\item \texttt{<SOS>} al inicio y \texttt{<EOS>} al final.
-\end{itemize}
-		\end{block}
-
-\end{frame}
-
-\begin{frame}{Tokenización y Dataset (`p')}
-	\begin{alertblock}{Se utilizan la clase \texttt{PrepareDataset} y \texttt{Tokenizer} de Keras para:}
-		\begin{itemize}
-	\item Ajustar un tokenizador para el encoder (oraciones fuente).
-	\item Ajustar otro tokenizador para el decoder (oraciones objetivo).
-	\item Calcular longitudes máximas y tamaños de vocabulario.
-	\item Convertir texto a secuencias enteras y aplicar \texttt{padding}.
-\end{itemize}
-	\end{alertblock}
-	\begin{itemize}
-		\item Se generan:
-		\begin{itemize}
-			\item \texttt{trainX}: oraciones fuente codificadas.
-			\item \texttt{trainY}: oraciones destino codificadas.
-			\item \texttt{train\_dataset}: batches de entrenamiento con \texttt{tf.data.Dataset}.
-		\end{itemize}
-
-	\end{itemize}
-\end{frame}
-
-
-
-
-
-
-\begin{frame}{Funciones de Keras utilizadas (Implementación a)}
-\begin{block}{TextVectorization}
-			\begin{itemize}
-		\item Tokeniza, normaliza y convierte texto en secuencias de enteros.
-		\item Aprende el vocabulario mediante \texttt{adapt()}.
-		\item Permite definir:
-		\begin{itemize}
-			\item tamaño del vocabulario,
-			\item longitud máxima de secuencia,
-			\item modo de salida (entero, multi-hot, TF-IDF).
-		\end{itemize}
-		\item Se usa para construir:
-		\begin{itemize}
-			\item \texttt{encoder\_inputs} (español),
-			\item \texttt{decoder\_inputs} y \texttt{targets} (inglés).
-		\end{itemize}
-	\end{itemize}
-\end{block}
-
-\begin{alertblock}{tf.data.Dataset}
-		\begin{itemize}
-	\item Construye el pipeline eficiente de entrenamiento.
-	\item Permite \texttt{batch}, \texttt{shuffle}, \texttt{prefetch} y \texttt{cache}.
-\end{itemize}
-
-		\end{alertblock}
-\textbf{No generan embeddings}; sólo producen secuencias de índices.
-
-\end{frame}
-
-\begin{frame}{Funciones de Keras utilizadas (Implementación p)}
+	\end{frame}
 	
-	\begin{block}{Tokenizer()}
-\begin{itemize}
-	\item Construye un vocabulario a partir del texto.
-	\item Convierte cada palabra en un entero único.
-	\item No normaliza automáticamente: se usa texto ya limpiado.
-	\item Se guardan dos tokenizadores:
-	\begin{itemize}
-		\item uno para el encoder,
-		\item otro para el decoder.
-	\end{itemize}
-\end{itemize}
-	\end{block}
+	\section{4. Almacenamiento de Parámetros}
 	
-	\begin{block}{\textbf{texts\_to\_sequences()}}
-		\begin{itemize}
-	\item Transforma cada oración en una lista de índices enteros.
-	\item Si una palabra no está en el vocabulario → índice \texttt{OOV}.
-\end{itemize}
-	\end{block}
-
-\end{frame}
-
-
-
-\begin{frame}{Funciones de Keras utilizadas (Implementación p)}
+	\begin{frame}[plain]
+		\begin{center}
+			\textbf{Consigna 4:}
+		\end{center}
+		\justifying
+		Indique en cada caso (para la ’a’ y la ’p’) cómo se guardan los parámetros obtenidos en cada modelo (pesos y configuración). 
+	\end{frame}
 	
-	\begin{block}{\textbf{pad\_sequences()}}
-		\begin{itemize}
-			\item Ajusta todas las oraciones a una longitud fija.
-			\item Agrega ceros al final (\texttt{padding='post'}).
-		\end{itemize}
-	\end{block}
+	\begin{frame}[fragile]{Punto 4 - Implementación 'a'}
+		\justifying
+		En la implementacion 'a' el modelo se guarda usando la funcion \textbf{model.save()} de Keras, la cual almacena la arquitectura completa del modelo, junto con los pesos entrenados.
+		
+		Esto se realiza en el archivo \textcolor{red}{a10.py} con la siguiente linea de codigo:
+		
+		\begin{lstlisting}
+			model.save("eng-fra-transformer.keras")
+		\end{lstlisting}
+		
+		Para cargar el modelo utiliza:
+		
+		\begin{lstlisting}
+			with tf.keras.utils.custom_object_scope(custom_objects):
+			model = tf.keras.models.load_model("eng-fra-transformer.keras")
+		\end{lstlisting}
+		
+	\end{frame}
 	
-	\begin{block}{\textbf{tf.data.Dataset}}
-		\begin{itemize}
-			\item Crea un dataset por lotes para entrenamiento del transformer.
-		\end{itemize}
-	\end{block}
-	\textbf{No se generan embeddings}. Sólo secuencias de índices.
-\end{frame}
-
-
-\begin{frame}{Comparación entre TextVectorization y Tokenizer}
-	\begin{block}{TextVectorization}
-		\begin{itemize}
-	\item Incluye normalización integrada.
-	\item Se adapta con \texttt{adapt()}.
-	\item Permite modos de salida alternativos (TF-IDF, multi-hot).
-\end{itemize}
-	\end{block}
-	
-		\begin{block}{Tokenizer()}
-		\begin{itemize}
-	\item No normaliza: requiere limpieza manual previa.
-	\item Muy usado en implementaciones clásicas de seq2seq.
-	\item Permite guardar tokenizadores fácilmente con \texttt{pickle}.
-\end{itemize}
-			\end{block}
-				
-\textbf{Ambas} producen secuencias enteras para alimentar una capa \texttt{Embedding}.
-
-\end{frame}
-
-\begin{frame}{Embeddings en Transformers (Implementación Real)}
-	\begin{block}{¿Qué hace la capa \texttt{Embedding}?}
-		\begin{itemize}
-			\item Convierte cada token entero en un vector d-dimensional.
-			\item Los vectores se inicializan aleatoriamente.
-			\item Son \textbf{parametrizables}: se ajustan durante el entrenamiento.
-			\item Representan relaciones semánticas aprendidas por gradiente.
-		\end{itemize}
-	\end{block}
-	
-	\begin{block}{Diferencia con CBOW / Skip-gram}
-		\begin{itemize}
-			\item CBOW/Skip-gram aprenden embeddings usando contextos.
-			\item Los vectores representan co-ocurrencia de palabras reales.
-			\item Son embeddings \textbf{preentrenados} basados en corpus grandes.
-			\item La capa \texttt{Embedding} del Transformer:
-			\begin{itemize}
-				\item NO usa contextos para aprender.
-				\item Aprende tareas específicas (p. ej. traducción).
-				\item Se entrena \textbf{junto con todo el modelo}.
-			\end{itemize}
-		\end{itemize}
-	\end{block}
-\end{frame}
-
-\begin{frame}{Embedding Posicional Entrenable vs. Fijo}
-	\begin{block}{Embedding Posicional Entrenable (Implementación a)}
-		\begin{itemize}
-			\item Se usa \texttt{tf.keras.layers.Embedding}.
-			\item Inicializa vectores para cada posición.
-			\item Los valores son parte del entrenamiento.
-			\item Se suman vector a vector con los token embeddings.
-			\item Modelo aprende relaciones posicionales óptimas.
-		\end{itemize}
-	\end{block}
-	
-	\begin{block}{Embedding Posicional Fijo (Implementación p)}
-		\begin{itemize}
-			\item Usa matriz sinusoidal (\textbf{no entrenable}).
-			\item Valores calculados: $\sin(k / n^{2i/d})$ y $\cos(k / n^{2i/d})$.
-			\item Se suma a los token embeddings fijos.
-			\item No se modifica durante entrenamiento.
-			\item Permite al modelo razonar sobre distancias absolutas y relativas.
-		\end{itemize}
-	\end{block}
-\end{frame}
-
-\begin{frame}{Implementación a: PositionalEmbedding (Entrenable)}
-	\begin{block}{¿Qué hace esta implementación?}
-		\begin{itemize}
-			\item Crea embeddings de palabras \textbf{entrenables}.
-			\item Crea embeddings posicionales fijos generados por seno y coseno.
-			\item El método \texttt{call()}:
-			\begin{itemize}
-				\item Convierte tokens en vectores densos.
-				\item Suma vectores posicionales precomputados.
-			\end{itemize}
-			\item Todos los embeddings de palabras se ajustan con gradiente.
-		\end{itemize}
-	\end{block}
-	
-\end{frame}
-
-\begin{frame}{Implementación p: PositionEmbeddingFixedWeights (No Entrenable)}
-	\begin{block}{¿Qué hace esta implementación?}
-		\begin{itemize}
-			\item Genera \textbf{embeddings de palabras} mediante sinusoidales.
-			\item Usa \texttt{Embedding(..., trainable=False)}.
-			\item Genera embeddings posicionales también fijos.
-		\end{itemize}
-	\end{block}
-	
-	\begin{block}{Limitaciones}
-		\begin{itemize}
-			\item Embeddings de palabras NO representan semántica real.
-			\item No aprenden durante entrenamiento.
-			\item No se parecen a CBOW/Skip-gram ni a embeddings reales.
-		\end{itemize}
-	\end{block}
-\end{frame}
-	% ==========================================
 	\begin{frame}[fragile]{Punto 4 - Implementación p}
-		
+		\justifying
 		En la implementación p el modelo se almacena de forma modular.
-	
-		En el archivo p9.py se genera el archivo ing-esp.pkl, que contiene:
+		
+		En el archivo \textcolor{red}{p9.py:} se genera el archivo ing-esp.pkl, que contiene:
 		
 		\begin{itemize}
 			\item Las oraciones limpias en inglés.
 			\item Las oraciones limpias en español.
 		\end{itemize}
 		
-		El tokenizador se guarda en el archivo p10.py mediante:
+		El tokenizador se guarda en el archivo \textcolor{red}{p10.py} mediante:
 		
 		\begin{lstlisting}
 			self.save_tokenizer(enc_tokenizer, 'enc')
@@ -517,15 +382,10 @@ Se carga el archivo \texttt{.txt} y se separa en pares \texttt{(inglés, españo
 		\end{itemize}
 		
 	\end{frame}
-
 	
-	% ==========================================
-	\begin{frame}[fragile]{Punto 4 - Implementación p}
-		
-		\textbf{Pesos del modelo}
-		
-		La implementación \textbf{p} guarda los parámetros mediante TensorFlow Checkpoints,
-		como se ve en el archivo p11.py:
+	\begin{frame}[fragile]{Punto 4 - Implementación p - Pesos del modelo}
+		\justifying
+		La implementación \textbf{p} guarda los parámetros mediante TensorFlow Checkpoints, como se ve en el archivo \textcolor{red}{p11.py}:
 		
 		\begin{lstlisting}
 			ckpt = train.Checkpoint(model=training_model, optimizer=optimizador)
@@ -538,13 +398,7 @@ Se carga el archivo \texttt{.txt} y se separa en pares \texttt{(inglés, españo
 			save_path = ckpt_manager.save()
 		\end{lstlisting}
 		
-		Se guardan:
-		
-		\begin{itemize}
-			\item Los pesos del codificador.
-			\item Los pesos del decodificador.
-			\item El estado del optimizador Adam.
-		\end{itemize}
+		Se guardan los pesos del codificador, del decodificador y el estado del optimizador Adam.
 		
 		\textbf{Para restaurar} un entrenamiento previo se utiliza:
 		
@@ -553,27 +407,35 @@ Se carga el archivo \texttt{.txt} y se separa en pares \texttt{(inglés, españo
 		\end{lstlisting}
 		
 	\end{frame}
-
 	
-	% ==========================================
+	\section{5. Implementación de Multi-Auto-Atención}
+	
+	\begin{frame}[plain]
+		\begin{center}
+			\textbf{Consigna 5:}
+		\end{center}
+		\justifying
+		Indique en cada caso (para la ’a’ y la ’p’) cómo se ha implementado la capa de multi-auto-atención.
+	\end{frame}
+	
 	\begin{frame}[fragile]{Punto 5 - Implementación 'a'}
-		
+		\justifying
 		En la implementación \textbf{'a'} el mecanismo de \textbf{multi-auto-atención} se implementa usando tf.keras.layers.MultiheadAttention de TensorFlow:
 		
 		\begin{lstlisting}
 			def self_attention(input_shape, prefix="att", mask=False, **kwargs):
-				inputs = tf.keras.layers.Input(shape=input_shape, dtype='float32',
-												name=f"{prefix}_in1")
-				attention = tf.keras.layers.MultiHeadAttention(name=f"{prefix}_attn1", **kwargs)
-				# ... 
+			inputs = tf.keras.layers.Input(shape=input_shape, dtype='float32',
+			name=f"{prefix}_in1")
+			attention = tf.keras.layers.MultiHeadAttention(name=f"{prefix}_attn1", **kwargs)
+			# ... 
 		\end{lstlisting}
 		
 		\begin{lstlisting}
 			def cross_attention(input_shape, context_shape, prefix="att", **kwargs):
-				context = tf.keras.layers.Input(shape=context_shape, dtype='float32',
-												name=f"{prefix}_ctx2")
-				inputs = tf.keras.layers.Input(shape=input_shape, dtype='float32',
-												name=f"{prefix}_in2")
+			context = tf.keras.layers.Input(shape=context_shape, dtype='float32',
+			name=f"{prefix}_ctx2")
+			inputs = tf.keras.layers.Input(shape=input_shape, dtype='float32',
+			name=f"{prefix}_in2")
 			attention = tf.keras.layers.MultiHeadAttention(name=f"{prefix}_attn2", **kwargs)
 			# ... 
 		\end{lstlisting}
@@ -581,9 +443,9 @@ Se carga el archivo \texttt{.txt} y se separa en pares \texttt{(inglés, españo
 	\end{frame}
 	
 	\begin{frame}[fragile]{Punto 5 - Implementacion 'p'}
-		
+		\justifying
 		En la implementación 'p' la capa de multi-auto-atención se implementa manualmente:
-	
+		
 		\begin{lstlisting}
 			class MultiAutoAtencion(Layer):
 			def __init__(self, cabezales, d_k, d_v, d, **kwargs):
@@ -600,46 +462,466 @@ Se carga el archivo \texttt{.txt} y se separa en pares \texttt{(inglés, españo
 		
 	\end{frame}
 	
-	\begin{frame}[fragile]{Punto 6 - Implementación 'a' - Obtención del Vocabulario}
+	\section{6. Obtención del Vocabulario}
 	
-		En la implementación 'a' el vocabulario se obtiene usando \texttt{TextVectorization} de Keras:
-	
-		\begin{lstlisting}
-			eng_vectorizer = TextVectorization(
-				max_tokens=vocab_size_en,
-				output_mode="int",
-				output_sequence_length=seq_length,
-			)
-			
-			# Adaptacion con datos de entrenamiento
-			train_eng_texts = [pair[0] for pair in train_pairs]
-			eng_vectorizer.adapt(train_eng_texts)
-		\end{lstlisting}
-		
-		Proceso:
-		\begin{itemize}
-			\item Se crea una capa \texttt{TextVectorization} con tamaño máximo de vocabulario
-			\item La capa automáticamente construye el vocabulario
-			\item Se guarda junto con el modelo en el archivo \texttt{vectorize.pickle}
-		\end{itemize}
-	
+	\begin{frame}[plain]
+		\begin{center}
+			\textbf{Consigna 6:}
+		\end{center}
+		\justifying
+		Indique en cada caso (para la ’a’ y la ’p’) cómo se obtiene (o Ud. obtendría) el vocabulario
+		dado el conjunto de datos usado.
 	\end{frame}
 	
-	% ==========================================
-	\begin{frame}[fragile]{Punto 6 - Implementación 'p' - Obtención del Vocabulario}
+	\begin{frame}[plain]{Punto 5 -Vectorización e Importancia de \texttt{pickle}(`a')}
+		
+		\begin{alertblock}{Vectorización}
+			\begin{itemize}
+				\item Se divide el corpus en \textbf{train / validación / test}.
+				\item Se crean dos capas \texttt{TextVectorization} y se adaptan con el conjunto de entrenamiento.
+				\item Los vectorizadores entrenados y los pares de datos se guardan con \texttt{pickle}.
+			\end{itemize}
+		\end{alertblock}
+		
+		\begin{block}{¿Por qué es importante \texttt{pickle}?}
+			\begin{itemize}
+				\item Permite guardar objetos complejos de Python (\texttt{TextVectorization}, vocabularios, listas, diccionarios).
+				\item Evita recalcular o readaptar los vectorizadores: se mantienen \textbf{exactamente los mismos tokens y el mismo índice de cada palabra}.
+			\end{itemize}
+		\end{block}
+		
+	\end{frame}
 	
-		En la implementación 'p' el vocabulario se obtiene usando \texttt{Tokenizer} de Keras:
+
+	
+	\begin{frame}[plain]{Punto 5 -Limpieza y Preparación del Corpus (`p')}
+		\begin{alertblock}{Archivo .txt}
+			Se carga el archivo \texttt{.txt} y se separa en pares \texttt{(inglés, español)} usando el tabulador.
+		\end{alertblock}
+		
+		\begin{block}{Normalización}
+			\begin{itemize}
+				\item Normalización Unicode (\texttt{NFD}) y eliminación de caracteres no ASCII.
+				\item Conversión a minúsculas y Remoción de puntuación mediante tabla de traducción.
+				\item Eliminación de tokens con números y caracteres no imprimibles.
+				\item Reconstrucción de la oración limpia como string.
+			\end{itemize}
+		\end{block}
+		El resultado final se almacena como matriz NumPy y se guarda en \texttt{ing-esp.pkl}.
+		
+		\begin{block}{Se agrega marcado con tokens especiales}
+			\begin{itemize}
+				\item \texttt{<SOS>} al inicio y \texttt{<EOS>} al final.
+			\end{itemize}
+		\end{block}
+		
+	\end{frame}
+	
+	\begin{frame}[plain]{Punto 5 -Tokenización y Dataset (`p')}
+		\begin{alertblock}{Se utilizan la clase \texttt{PrepareDataset} y \texttt{Tokenizer} de Keras para:}
+			\begin{itemize}
+				\item Ajustar un tokenizador para el encoder (oraciones fuente).
+				\item Ajustar otro tokenizador para el decoder (oraciones objetivo).
+				\item Calcular longitudes máximas y tamaños de vocabulario.
+				\item Convertir texto a secuencias enteras y aplicar \texttt{padding}.
+			\end{itemize}
+		\end{alertblock}
+		\begin{itemize}
+			\item Se generan:
+			\begin{itemize}
+				\item \texttt{trainX}: oraciones fuente codificadas.
+				\item \texttt{trainY}: oraciones destino codificadas.
+				\item \texttt{train\_dataset}: batches de entrenamiento con \texttt{tf.data.Dataset}.
+			\end{itemize}
+			
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}[plain]{Punto 5 -Funciones de Keras utilizadas (Implementación a)}
+		\begin{block}{TextVectorization}
+			\begin{itemize}
+				\item Tokeniza, normaliza y convierte texto en secuencias de enteros.
+				\item Aprende el vocabulario mediante \texttt{adapt()}.
+				\item Permite definir:
+				\begin{itemize}
+					\item tamaño del vocabulario,
+					\item longitud máxima de secuencia,
+					\item modo de salida (entero, multi-hot, TF-IDF).
+				\end{itemize}
+				\item Se usa para construir:
+				\begin{itemize}
+					\item \texttt{encoder\_inputs} (español),
+					\item \texttt{decoder\_inputs} y \texttt{targets} (inglés).
+				\end{itemize}
+			\end{itemize}
+		\end{block}
+		
+		\begin{alertblock}{tf.data.Dataset}
+			\begin{itemize}
+				\item Construye el pipeline eficiente de entrenamiento.
+				\item Permite \texttt{batch}, \texttt{shuffle}, \texttt{prefetch} y \texttt{cache}.
+			\end{itemize}
+			
+		\end{alertblock}
+		\textbf{No generan embeddings}; sólo producen secuencias de índices.
+		
+	\end{frame}
+	
+	\begin{frame}[plain]{Punto 5 -Funciones de Keras utilizadas (Implementación p)}
+		
+		\begin{block}{Tokenizer()}
+			\begin{itemize}
+				\item Construye un vocabulario a partir del texto.
+				\item Convierte cada palabra en un entero único.
+				\item No normaliza automáticamente: se usa texto ya limpiado.
+				\item Se guardan dos tokenizadores:
+				\begin{itemize}
+					\item uno para el encoder,
+					\item otro para el decoder.
+				\end{itemize}
+			\end{itemize}
+		\end{block}
+		
+		\begin{block}{\textbf{texts\_to\_sequences()}}
+			\begin{itemize}
+				\item Transforma cada oración en una lista de índices enteros.
+				\item Si una palabra no está en el vocabulario → índice \texttt{OOV}.
+			\end{itemize}
+		\end{block}
+		
+	\end{frame}
+	
+	
+	
+	\begin{frame}[plain]{Punto 5 -Funciones de Keras utilizadas (Implementación p)}
+		
+		\begin{block}{\textbf{pad\_sequences()}}
+			\begin{itemize}
+				\item Ajusta todas las oraciones a una longitud fija.
+				\item Agrega ceros al final (\texttt{padding='post'}).
+			\end{itemize}
+		\end{block}
+		
+		\begin{block}{\textbf{tf.data.Dataset}}
+			\begin{itemize}
+				\item Crea un dataset por lotes para entrenamiento del transformer.
+			\end{itemize}
+		\end{block}
+		\textbf{No se generan embeddings}. Sólo secuencias de índices.
+	\end{frame}
+	
+	
+	\begin{frame}[plain]{Punto 5 -Comparación entre TextVectorization y Tokenizer}
+		\begin{block}{TextVectorization}
+			\begin{itemize}
+				\item Incluye normalización integrada.
+				\item Se adapta con \texttt{adapt()}.
+				\item Permite modos de salida alternativos (TF-IDF, multi-hot).
+			\end{itemize}
+		\end{block}
+		
+		\begin{block}{Tokenizer()}
+			\begin{itemize}
+				\item No normaliza: requiere limpieza manual previa.
+				\item Muy usado en implementaciones clásicas de seq2seq.
+				\item Permite guardar tokenizadores fácilmente con \texttt{pickle}.
+			\end{itemize}
+		\end{block}
+		
+		\textbf{Ambas} producen secuencias enteras para alimentar una capa \texttt{Embedding}.
+		
+	\end{frame}
+	
+	\section{7. Obtención de Embeddings}
+	
+		\begin{frame}[plain]
+		\begin{center}
+			\textbf{Consigna 7:}
+		\end{center}
+		\justifying
+		Indique en cada caso cómo se obtienen las representaciones contextuales (embeddings)
+		del vocabulario usado.
+	\end{frame}
+	
+	\begin{frame}[plain]{Embeddings en Transformers (Implementación Real)}
+		\begin{block}{¿Qué hace la capa \texttt{Embedding}?}
+			\begin{itemize}
+				\item Convierte cada token entero en un vector d-dimensional.
+				\item Los vectores se inicializan aleatoriamente.
+				\item Son \textbf{parametrizables}: se ajustan durante el entrenamiento.
+				\item Representan relaciones semánticas aprendidas por gradiente.
+			\end{itemize}
+		\end{block}
+		
+		\begin{block}{Diferencia con CBOW / Skip-gram}
+			\begin{itemize}
+				\item CBOW/Skip-gram aprenden embeddings usando contextos.
+				\item Los vectores representan co-ocurrencia de palabras reales.
+				\item Son embeddings \textbf{preentrenados} basados en corpus grandes.
+				\item La capa \texttt{Embedding} del Transformer:
+				\begin{itemize}
+					\item NO usa contextos para aprender.
+					\item Aprende tareas específicas (p. ej. traducción).
+					\item Se entrena \textbf{junto con todo el modelo}.
+				\end{itemize}
+			\end{itemize}
+		\end{block}
+	\end{frame}
+	
+	\begin{frame}[plain]{Embedding Posicional Entrenable vs. Fijo}
+		\begin{block}{Embedding Posicional Entrenable (Implementación a)}
+			\begin{itemize}
+				\item Se usa \texttt{tf.keras.layers.Embedding}.
+				\item Inicializa vectores para cada posición.
+				\item Los valores son parte del entrenamiento.
+				\item Se suman vector a vector con los token embeddings.
+				\item Modelo aprende relaciones posicionales óptimas.
+			\end{itemize}
+		\end{block}
+		
+		\begin{block}{Embedding Posicional Fijo (Implementación p)}
+			\begin{itemize}
+				\item Usa matriz sinusoidal (\textbf{no entrenable}).
+				\item Valores calculados: $\sin(k / n^{2i/d})$ y $\cos(k / n^{2i/d})$.
+				\item Se suma a los token embeddings fijos.
+				\item No se modifica durante entrenamiento.
+				\item Permite al modelo razonar sobre distancias absolutas y relativas.
+			\end{itemize}
+		\end{block}
+	\end{frame}
+	
+	\begin{frame}[plain]{Implementación a: PositionalEmbedding (Entrenable)}
+		\begin{block}{¿Qué hace esta implementación?}
+			\begin{itemize}
+				\item Crea embeddings de palabras \textbf{entrenables}.
+				\item Crea embeddings posicionales fijos generados por seno y coseno.
+				\item El método \texttt{call()}:
+				\begin{itemize}
+					\item Convierte tokens en vectores densos.
+					\item Suma vectores posicionales precomputados.
+				\end{itemize}
+				\item Todos los embeddings de palabras se ajustan con gradiente.
+			\end{itemize}
+		\end{block}
+		
+	\end{frame}
+	
+	\begin{frame}[plain]{Implementación p: PositionEmbeddingFixedWeights (No Entrenable)}
+		\begin{block}{¿Qué hace esta implementación?}
+			\begin{itemize}
+				\item Genera \textbf{embeddings de palabras} mediante sinusoidales.
+				\item Usa \texttt{Embedding(..., trainable=False)}.
+				\item Genera embeddings posicionales también fijos.
+			\end{itemize}
+		\end{block}
+		
+		\begin{block}{Limitaciones}
+			\begin{itemize}
+				\item Embeddings de palabras NO representan semántica real.
+				\item No aprenden durante entrenamiento.
+				\item No se parecen a CBOW/Skip-gram ni a embeddings reales.
+			\end{itemize}
+		\end{block}
+	\end{frame}
+	
+	\section{8. Implementación del Modelo}
+	
+	\begin{frame}[plain]
+		\begin{center}
+			\textbf{Consigna 8:}
+		\end{center}
+		\justifying
+		Indique en cada caso (para la ’a’ y la ’p’) cómo está implementado el Transformador, es decir, si se lo implementa mediante un modelo (Model de Keras) o de otra forma. 
+	\end{frame}
+	
+	\begin{frame}[fragile]{Punto 8 - Implementación a - Codificador}
+		\justifying
+		
+		\begin{block}{Recordemos, el Transformer para traducción está compuesto por:}
+			\begin{itemize}
+				\item \textbf{Codificador (Encoder)}
+				\item \textbf{Decodificador (Decoder)}
+			\end{itemize}
+		\end{block}
+		
+		Para cada token \(i\), las transformaciones internas del bloque pueden expresarse mediante variables intermedias \(t_i \in \mathbb{R}^{1 \times d}\). Como funciones en \textcolor{red}{a7.py} son:
+		
+		\begin{block}{Bloque de Transformación - encoder()}
+			\noindent
+			\begin{tabular}{@{}l@{}l@{}}
+				% --- grupo 1 ---
+				$\begin{array}{l}
+					t_i^1 = \text{autoAtenciónMúltiple}(x_i,[x_1,\dots,x_N]) \\
+					t_i^2 = x_i + t_i^1 \\
+					t_i^3 = \text{Normalización}(t_i^2)
+				\end{array}$
+				&
+				$\color{red}\left.\vphantom{\begin{array}{l} t_i^1\\t_i^2\\t_i^3 \end{array}}\right\}
+				\ \textcolor{red}{\text{self\_attention()}}$
+				\\[6pt]
+				% --- grupo 2 ---
+				$\begin{array}{l}
+					t_i^4 = \text{PMC}(t_i^3) \\
+					t_i^5 = t_i^3 + t_i^4 \\
+					h_i   = \text{Normalización}(t_i^5)
+				\end{array}$
+				&
+				$\color{red}\left.\vphantom{\begin{array}{l} t_i^4\\t_i^5\\h_i \end{array}}\right\}
+				\ \textcolor{red}{\text{feed\_forward()}}$
+			\end{tabular}
+		\end{block}
+		
+	\end{frame}
+	
+	\begin{frame}{Punto 8 - Implementación a - Decodificador}
+		\justifying
+		
+		\begin{block}{Bloque de Transformación - decoder()}
+			\noindent
+			\begin{tabular}{@{}l@{}l@{}}
+				% --- grupo 1: self-attention ---
+				$\begin{array}{l}
+					t_i^1 = \text{autoAtenciónMúltiple}(y_i,[y_1,\dots,y_M]) \\
+					t_i^2 = y_i + t_i^1 \\
+					t_i^3 = \text{Normalización}(t_i^2)
+				\end{array}$
+				&
+				$\color{red}\left.\vphantom{\begin{array}{l} t_i^1\\t_i^2\\t_i^3 \end{array}}\right\}
+				\ \textcolor{red}{\text{self\_attention()}}$
+				\\[6pt]
+				
+				% --- grupo 2: cross-attention ---
+				$\begin{array}{l}
+					t_i^4 = \text{atenciónCruzada}(t_i^3,[h_1,\dots,h_N]) \\
+					t_i^5 = t_i^3 + t_i^4 \\
+					t_i^6 = \text{Normalización}(t_i^5)
+				\end{array}$
+				&
+				$\color{red}\left.\vphantom{\begin{array}{l} t_i^4\\t_i^5\\t_i^6 \end{array}}\right\}
+				\ \textcolor{red}{\text{cross\_attention()}}$
+				\\[6pt]
+				
+				% --- grupo 3: feed-forward ---
+				$\begin{array}{l}
+					t_i^7 = \text{PMC}(t_i^6) \\
+					t_i^8 = t_i^6 + t_i^7 \\
+					h'_i = \text{Normalización}(t_i^8)
+				\end{array}$
+				&
+				$\color{red}\left.\vphantom{\begin{array}{l} t_i^7\\t_i^8\\h'_i \end{array}}\right\}
+				\ \textcolor{red}{\text{feed\_forward()}}$
+			\end{tabular}
+		\end{block}
+		
+	\end{frame}
+	
+	\begin{frame}[fragile]{Punto 8 - Implementación a - Transformador}
+		\justifying
+		Con esto en cuenta queda clara la implementación del transformer \textcolor{red}{a8.py}:
 		
 		\begin{lstlisting}
-			def create_tokenizer(self, dataset):
-				tokenizer = Tokenizer()
-				tokenizer.fit_on_texts(dataset)
-				return tokenizer
+			def transformer(...) -> tf.keras.Model:
+			embed_shape = (seq_len, key_dim)
+			input_enc = tf.keras.layers.Input((seq_len,))
+			input_dec = tf.keras.layers.Input((seq_len,))
 			
-			# Uso para encoder y decoder
-			enc_tokenizer = self.create_tokenizer(train[:, 0])
-			dec_tokenizer = self.create_tokenizer(train[:, 1])
+			embed_enc = PositionalEmbedding(...)
+			embed_dec = PositionalEmbedding(...)
+			encoders = [encoder(...)]
+			decoders = [decoder(...)]
+			
+			final = tf.keras.layers.Dense(vocab_size_tgt)
+			x1 = embed_enc(input_enc)
+			x2 = embed_dec(input_dec)
+			for layer in encoders: x1 = layer(x1)
+			for layer in decoders: x2 = layer([x2, x1])
+			output = final(x2)
+			return tf.keras.Model(inputs=[input_enc, input_dec], outputs=output, name=name)
 		\end{lstlisting}
+	\end{frame}
+	
+	\begin{frame}[fragile]{Punto 8 - Implementación a}
+		\justifying
+		
+		Luego en \textcolor{red}{a6.py} cada capa de auto atención se realiza como:
+		
+		\begin{lstlisting}
+			def self_attention(...) -> tf.keras.Model:
+			inputs = tf.keras.layers.Input(input_shape, ...)
+			
+			attention = tf.keras.layers.MultiHeadAttention(...)
+			norm = tf.keras.layers.LayerNormalization(...)
+			add = tf.keras.layers.Add(...)
+			
+			attout = attention(query=inputs, value=inputs, key=inputs, use_causal_mask=mask)
+			outputs = norm(add([inputs, attout]))
+			
+			return tf.keras.Model(inputs=inputs, outputs=outputs, name=f"{prefix}_att")
+		\end{lstlisting}
+	\end{frame}
+	
+	\begin{frame}[fragile]{Punto 8 - Implementación a}
+		\justifying
+		
+		Cada capa de auto atención cruzada como:
+		
+		\begin{lstlisting}
+			def cross_attention(...) -> tf.keras.Model:
+			context = tf.keras.layers.Input(context_shape, ...)
+			inputs = tf.keras.layers.Input(input_shape, ...)
+			
+			attention = tf.keras.layers.MultiHeadAttention(...)
+			norm = tf.keras.layers.LayerNormalization(...)
+			add = tf.keras.layers.Add(...)
+			
+			attout = attention(query=inputs, value=context, key=context)
+			outputs = norm(add([inputs, attout]))
+			
+			return tf.keras.Model(inputs=[(context, inputs)], outputs=outputs,
+			name=f"{prefix}_cross")
+		\end{lstlisting}
+	\end{frame}
+	
+	\begin{frame}[fragile]{Punto 8 - Implementación a}
+		\justifying
+		
+		Y cada capa de PMC como:
+		
+		\begin{lstlisting}
+			def feed_forward(...) -> tf.keras.Model:
+			inputs = tf.keras.layers.Input(input_shape, ...)
+			
+			dense1 = tf.keras.layers.Dense(ff_dim, ...)
+			dense2 = tf.keras.layers.Dense(model_dim, ...)
+			drop = tf.keras.layers.Dropout(dropout, ...)
+			add = tf.keras.layers.Add(...)
+			
+			ffout = drop(dense2(dense1(inputs)))
+			norm = tf.keras.layers.LayerNormalization(...)
+			outputs = norm(add([inputs, ffout]))
+			
+			return tf.keras.Model(inputs=inputs, outputs=outputs, name=f"{prefix}_ff")
+		\end{lstlisting}
+	\end{frame}
+	
+	\begin{frame}[fragile]{Punto 8 - Implementación p}
+		\justifying
+		
+	\end{frame}
+	
+	
+	\section{9. Reporte de Resultados}
+	
+	\begin{frame}[plain]
+		\begin{center}
+			\textbf{Consigna 9:}
+		\end{center}
+		\justifying
+		Reporte los resultados sobre un conjunto de validación (independiente del conjunto de entrenamiento) para distintos momentos del aprendizaje. 
+	\end{frame}
+	
+	\begin{frame}
+		\justifying
 		
 	\end{frame}
 	
