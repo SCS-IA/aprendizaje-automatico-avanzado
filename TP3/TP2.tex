@@ -320,12 +320,16 @@ Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
 				# ... 
 		\end{lstlisting}
 		
+	\end{frame}
+	
+		\begin{frame}[fragile]{Implementación de la capa de multi-auto-atención - Implementación 'a'}
+		
 		\begin{lstlisting}
 			def cross_attention(input_shape, context_shape, prefix="att", **kwargs):
-				context = tf.keras.layers.Input(shape=context_shape, dtype='float32',
-												name=f"{prefix}_ctx2")
-				inputs = tf.keras.layers.Input(shape=input_shape, dtype='float32',
-												name=f"{prefix}_in2")
+			context = tf.keras.layers.Input(shape=context_shape, dtype='float32',
+			name=f"{prefix}_ctx2")
+			inputs = tf.keras.layers.Input(shape=input_shape, dtype='float32',
+			name=f"{prefix}_in2")
 			attention = tf.keras.layers.MultiHeadAttention(name=f"{prefix}_attn2", **kwargs)
 			# ... 
 		\end{lstlisting}
@@ -352,7 +356,7 @@ Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
 		
 	\end{frame}
 	
-	\begin{frame}[fragile]{Punto 6 - Implementación 'a' - Obtención del Vocabulario}
+	\begin{frame}[fragile]{Implementación 'a' - Obtención del Vocabulario}
 	
 		En la implementación 'a' el vocabulario se obtiene usando \texttt{TextVectorization} de Keras:
 	
@@ -378,7 +382,7 @@ Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
 	\end{frame}
 	
 	% ==========================================
-	\begin{frame}[fragile]{Punto 6 - Implementación 'p' - Obtención del Vocabulario}
+	\begin{frame}[fragile]{Implementación 'p' - Obtención del Vocabulario}
 	
 		En la implementación 'p' el vocabulario se obtiene usando \texttt{Tokenizer} de Keras:
 		
