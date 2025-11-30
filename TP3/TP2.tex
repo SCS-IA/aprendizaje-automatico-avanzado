@@ -64,14 +64,10 @@
 		{\small 17 de Noviembre de 2025}
 	\end{frame}
 	
-	\section{Objetivo del Trabajo}
+	\section{}
 	
 	\begin{frame}{}
-		Este trabajo práctico tiene como objetivo analizar e implementar dos variantes arquitectónicas de Transformadores para traducción automática español-inglés:
-		
-		Implementación P: xxx
-		
-		Implementación A: xxx
+		Este trabajo práctico tiene como objetivo analizar e implementar dos variantes arquitectónicas de Transformadores para traducción automática español-inglés.
 		
 	\end{frame}
 	
@@ -80,7 +76,7 @@
 		Los Transformadores representan un gran avance en el campo del Procesamiento de Lenguaje Natural (PLN). En este contexto los mismos constituyen el estado del arte actual para el aprendizaje de Modelos de Grandes Lenguajes (LLM).
 		
 		Para realizar traducción automática, los Transformadores implementan el modelo de secuencia a secuencia (seq2seq), que es capaz de obtener una secuencia de salida dada una secuencia de entrada, independientemente de la longitud de ambas.
-		Estos sistemas son entradnos a partir de pares de oraciones, una de ellas en el lenguaje fuente y la otra en el lenguaje objetivo.
+		Estos sistemas son entrenados a partir de pares de oraciones, una de ellas en el lenguaje fuente y la otra en el lenguaje objetivo.
 		
 	\end{frame}
 	
@@ -90,7 +86,7 @@
 		El traductor esta compuesto por dos Transformadores:
 		
 		\begin{itemize}
-			\item Codificador: Procesa la secuencia de entrada y genera representaciones contextuales enriquecidas(prof).
+			\item Codificador: Procesa la secuencia de entrada y genera representaciones contextuales enriquecidas.
 			\item Decodificador: Genera la secuencia de salida token por token, utilizando la información proporcionada por el Codificador.
 		\end{itemize}
 		
@@ -210,7 +206,7 @@
 	\end{frame}
 	
 	% ===============================================
-		\begin{frame}[fragile]{Punto 2 - Conjunto de Datos Utilizados}
+		\begin{frame}[fragile]{Conjunto de Datos Utilizados}
 		
 		\begin{block}{\textit{Common Crawl}}
 			Es una organización sin fines de lucro que rastrea la web y ofrece un repositorio masivo y gratuito de datos de rastreo web para investigadores, empresas y público en general. Estos datos, que incluyen petabytes de páginas web, se almacenan en Amazon Web Services (AWS) y se actualizan periódicamente. 
@@ -223,31 +219,9 @@ Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
 		\textbf{¿La solución?}
 		Hay varias bases de datos con estos HTML´s depurados, que luego pueden ser utilizados como \emph{tokens} para diferentes modelos de lenguajes.
 	\end{frame}
-	
-		\begin{frame}[fragile]{Punto 2 - Conjunto de Datos Utilizados (`a')}
 		
-		\begin{block}{Conjunto Original}
-			Es una organización sin fines de lucro que rastrea la web y ofrece un repositorio masivo y gratuito de datos de rastreo web para investigadores, empresas y público en general. Estos datos, que incluyen petabytes de páginas web, se almacenan en Amazon Web Services (AWS) y se actualizan periódicamente. 
-		\end{block}
-		
-		\begin{alertblock}{¡¡Problema!!}
-			Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
-		\end{alertblock}
-		
-		\textbf{¿La solución?}
-		Hay varias bases de datos con estos HTML´s depurados, que luego pueden ser utilizados como \emph{tokens} para diferentes modelos de lenguajes.
-	\end{frame}
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	% ==========================================
-	\begin{frame}[fragile]{Punto 4 - Implementación 'a'}
+	\begin{frame}[fragile]{¿Como se guardan los parámetros aprendidos? - Implementación 'a'}
 		
 		En la implementacion 'a' el modelo de guarda usando la funcion model.save() de Keras, la cual almacena la arquitectura completa del modelo, junto con los pesos entrenados.
 		Esto se realiza en el archivo a10.py con la siguiente linea de codigo:
@@ -266,7 +240,7 @@ Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
 	\end{frame}
 	
 	% ==========================================
-	\begin{frame}[fragile]{Punto 4 - Implementación p}
+	\begin{frame}[fragile]{¿Como se guardan los parámetros aprendidos? - Implementación 'p'}
 		
 		En la implementación p el modelo se almacena de forma modular.
 	
@@ -295,7 +269,7 @@ Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
 
 	
 	% ==========================================
-	\begin{frame}[fragile]{Punto 4 - Implementación p}
+	\begin{frame}[fragile]{¿Como se guardan los parámetros aprendidos? - Implementación 'p'}
 		
 		\textbf{Pesos del modelo}
 		
@@ -306,8 +280,11 @@ Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
 			ckpt = train.Checkpoint(model=training_model, optimizer=optimizador)
 			ckpt_manager = train.CheckpointManager(ckpt, "./checkpoints", max_to_keep=3)
 		\end{lstlisting}
-		
-		Durante el entrenamiento, después de cada época se almacena:
+	
+	\end{frame}
+	
+	\begin{frame}[fragile]{¿Como se guardan los parámetros aprendidos? - Implementación 'p'}
+				Durante el entrenamiento, después de cada época se almacena:
 		
 		\begin{lstlisting}
 			save_path = ckpt_manager.save()
@@ -331,7 +308,7 @@ Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
 
 	
 	% ==========================================
-	\begin{frame}[fragile]{Punto 5 - Implementación 'a'}
+	\begin{frame}[fragile]{Implementación de la capa de multi-auto-atención - Implementación 'a'}
 		
 		En la implementación \textbf{'a'} el mecanismo de \textbf{multi-auto-atención} se implementa usando tf.keras.layers.MultiheadAttention de TensorFlow:
 		
@@ -355,7 +332,7 @@ Las millones de páginas están guardadas en el lenguaje de marcado (HTML).
 		
 	\end{frame}
 	
-	\begin{frame}[fragile]{Punto 5 - Implementacion 'p'}
+	\begin{frame}[fragile]{Implementación de la capa de multi-auto-atención - Implementacion 'p'}
 		
 		En la implementación 'p' la capa de multi-auto-atención se implementa manualmente:
 	
