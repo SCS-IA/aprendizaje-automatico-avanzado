@@ -13,3 +13,10 @@
 			dec_tokenizer = self.create_tokenizer(train[:, 1])
 		\end{lstlisting}
 		
+				Proceso:
+		\begin{itemize}
+			\item Se crea un Tokenizer vació.
+			\item Se llama a \texttt{fit\_on\_texts} pasándole todas las oraciones del corpus.
+			\item El tokenizer construye el vocabulario.
+		\end{itemize}
+		
